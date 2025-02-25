@@ -41,12 +41,17 @@ exports.login = async (usuario, contrasena) => {
       }
   
       const token = jwt.sign(
-        { uid: user.id_usuario, usuario: user.usuario },
+        { uid: user.id, usuario: user.usuario },
         process.env.JWT_SECRET,
         { expiresIn: "4h" }
       );
   
-      return token;
+      return{
+        id: user.id_usuario,
+        nombre: user.nombre,
+        usuario: user.usuario,
+        token
+      };
     } catch (error) {
       console.error("Error en login:", error.message);
       throw new Error(error.message);

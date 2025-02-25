@@ -46,24 +46,18 @@ const registro = async (req, res) => {
 const login = async (req, res, next) => {
     try {
       const { usuario, contrasena } = req.body;
-      const token = await userService.login(usuario, contrasena);
-      console.log("Token generado:", token);
+      const data = await userService.login(usuario, contrasena);
+      //console.log("Token generado:", token);
   
       res.status(200).json({
-        token,
-        usuario: {
-          id: usuario.id_usuario,
-          nombre: usuario.nombre, // Asegúrate de que estos campos existan
-          usuario: usuario.usuario,
-          login: true,
-        },
+        data
       });
       
     } catch (error) {
       console.error("Error al iniciar sesión:", error.message);
       res.status(401).json({ message: error.message });
     }
-  };
+  }; 
   
 
 //Actualizar Usuario
