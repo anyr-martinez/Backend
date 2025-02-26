@@ -2,46 +2,37 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
 const validarJWT = async (req, res, next) => {
-    let token = req.header('Authorization'); // Usando let en lugar de const
-    console.log('Token recibido:', token); // Para verificar qué token se recibe
+    let token = req.header('Authorization');
+    console.log('Token recibido:', token);
 
     if (token && token.startsWith('Bearer ')) {
-        token = token.split(' ')[1]; // Remueve 'Bearer ' del token
+        token = token.split(' ')[1];
     }
 
     if (!token) {
-        return res.status(401).json({
-            msg: "No hay token"
-        });
+        return res.status(401).json({ msg: "No hay token" });
     }
 
     try {
-        const { uid } = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.getUserById(uid);
+        const { id } = jwt.verify(token, process.env.JWT_SECRET);  
+        console.log("ID del usuario decodificado:", id);
+
+        const user = await User.getUserById(id);  
 
         if (!user) {
-            return res.status(401).json({
-                msg: "Token No Valido - Usuario no existe"
-            });
+            return res.status(401).json({ msg: "Token No Valido - Usuario no existe" });
         }
 
-        // Verificar si el UID no esta en false
         if (!user.estado) {
-            return res.status(401).json({
-                msg: "Token No Valido - Usuario estado False"
-            });
+            return res.status(401).json({ msg: "Token No Valido - Usuario estado False" });
         }
 
         req.user = user;
         next();
     } catch (error) {
-        console.log(error);
-        res.status(401).json({
-            msg: "Token No Valido"
-        });
+        console.log("Error al verificar token:", error);
+        res.status(401).json({ msg: "Token No Valido" });
     }
 }
 
-module.exports = {
-    validarJWT
-}
+module.exports = { validarJWT };

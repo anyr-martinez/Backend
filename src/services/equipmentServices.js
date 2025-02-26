@@ -36,26 +36,41 @@ exports.getEquipmentById = async (id) => {
 // Actualizar el estado o la descripción de un equipo
 exports.updateEquipment = async (id, data) => {
     try {
+        // Verificar que todos los datos necesarios estén presentes
+        if (!data.descripcion || !data.tipo || !data.numero_serie || !data.fecha_registro) {
+            throw new Error('Faltan parámetros obligatorios');
+        }
+
         // Obtener equipo por id
         const equipment = await Equipment.getEquipmentById(id);
-        if (equipment) {
-            // Pasar los datos al modelo para hacer la actualización
-            const updatedEquipment = await Equipment.updateEquipmentById(id, 
-                data.descripcion, 
-                data.tipo, 
-                data.numero_serie, 
-                data.fecha_registro, 
-            
-            );
-            return updatedEquipment;
-        } else {
+        if (!equipment) {
             throw new Error('Equipo no encontrado');
         }
+
+        // Llamar al modelo para hacer la actualización
+        const updatedResult = await Equipment.updateEquipmentById(
+            id,  // Pasar el id al modelo
+            data.descripcion, 
+            data.tipo, 
+            data.numero_serie, 
+            data.fecha_registro
+        );
+
+        // Si se actualizó al menos una fila, obtén los nuevos datos del equipo
+        if (updatedResult.affectedRows > 0) {
+            const updatedEquipment = await Equipment.getEquipmentById(id);
+            return updatedEquipment;  // Devolver los datos actualizados del equipo
+        } else {
+            throw new Error('No se actualizó ninguna fila');
+        }
     } catch (error) {
-        console.error('Error al actualizar el equipo:', error);
+        console.error('Error al actualizar el equipo:', error.message);
         throw error;
     }
 };
+
+
+
 
 
 // Eliminar un equipo

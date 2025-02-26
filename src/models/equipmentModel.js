@@ -3,17 +3,32 @@ const pool = require('../utils/db');
 
 const Equipment = {
     // Crear un nuevo equipo
-        createEquipment: async (descripcion, tipo, numero_serie, fecha_registro) => {
-            console.log("Parámetros recibidos en el modelo:", descripcion, tipo, numero_serie, fecha_registro);
+    createEquipment: async (descripcion, tipo, numero_serie, fecha_registro) => {
+        console.log("Parámetros recibidos en el modelo:", descripcion, tipo, numero_serie, fecha_registro);
     
-            if (!descripcion || !tipo || !numero_serie || !fecha_registro) {
-                throw new Error("Faltan parámetros obligatorios");
-            }
+        // Verificación de parámetros
+        if (!descripcion || !tipo || !numero_serie || !fecha_registro) {
+            throw new Error("Faltan parámetros obligatorios");
+        }
     
-            const query = 'INSERT INTO equipos (descripcion, tipo, numero_serie, fecha_registro) VALUES (?, ?, ?, ?)';
-            const [result] = await pool.execute(query, [descripcion, tipo, numero_serie, fecha_registro]);
-            return result;
-        },
+        // Consulta para insertar el equipo
+        const query = 'INSERT INTO equipos (descripcion, tipo, numero_serie, fecha_registro) VALUES (?, ?, ?, ?)';
+        const [result] = await pool.execute(query, [descripcion, tipo, numero_serie, fecha_registro]);
+    
+        // Verificar que la inserción haya sido exitosa
+        if (result.affectedRows === 1) {
+            // Devolver los datos completos del equipo insertado
+            return {
+                id_equipo: result.insertId, // ID generado automáticamente
+                descripcion,
+                tipo,
+                numero_serie,
+                fecha_registro
+            };
+        } else {
+            throw new Error("No se pudo crear el equipo");
+        }
+    },
     
     
 
@@ -32,16 +47,17 @@ const Equipment = {
     },
 
     // Actualizar datos de un equipo
-    updateEquipmentById: async (id_equipo, descripcion, tipo, numero_serie, fecha_registro) => {
-        if (!id_equipo || !descripcion || !tipo || !numero_serie || !fecha_registro  === undefined) {
+    updateEquipmentById: async (id, descripcion, tipo, numero_serie, fecha_registro) => {
+        if (!id || !descripcion || !tipo || !numero_serie || !fecha_registro) {
             throw new Error('Parámetros inválidos');
         }
-        
+    
         // El query de actualización debe pasar correctamente los valores
         const query = 'UPDATE equipos SET descripcion = ?, tipo = ?, numero_serie = ?, fecha_registro = ? WHERE id_equipo = ?';
-        const [result] = await pool.execute(query, [descripcion, tipo, numero_serie, fecha_registro,  id_equipo]);
+        const [result] = await pool.execute(query, [descripcion, tipo, numero_serie, fecha_registro, id]);  // Usar 'id' en lugar de 'id_equipo'
         return result;
     },
+    
 
 
 

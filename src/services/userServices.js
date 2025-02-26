@@ -23,41 +23,39 @@ exports.register=async(nombre,usuario,contrasena)=>{
 
 //servicio de logeo para usuario
 exports.login = async (usuario, contrasena) => {
-    try {
+  try {
       const user = await User.getUserByuser(usuario);
-      console.log("Usuario encontrado:", user);
-  
       if (!user) {
-        throw new Error("Usuario o contraseña incorrecto");
+          throw new Error("Usuario o contraseña incorrecto");
       }
-  
-      if (user['estado'] === 0) {
-        throw new Error("El usuario está inactivo");
+
+      if (user.estado === 0) {
+          throw new Error("El usuario está inactivo");
       }
-  
+
       const isMatch = await bcrypt.compare(contrasena, user.contrasena);
       if (!isMatch) {
-        throw new Error("Contraseña incorrecta");
+          throw new Error("Contraseña incorrecta");
       }
-  
+
       const token = jwt.sign(
-        { uid: user.id, usuario: user.usuario },
-        process.env.JWT_SECRET,
-        { expiresIn: "4h" }
+          { id: user.id_usuario, usuario: user.usuario },  // 🔹 Usar id_usuario
+          process.env.JWT_SECRET,
+          { expiresIn: "4h" }
       );
-  
-      return{
-        id: user.id_usuario,
-        nombre: user.nombre,
-        usuario: user.usuario,
-        token
+
+      return {
+          id: user.id_usuario,
+          nombre: user.nombre,
+          usuario: user.usuario,
+          token
       };
-    } catch (error) {
+  } catch (error) {
       console.error("Error en login:", error.message);
       throw new Error(error.message);
-    }
-  };
-  
+  }
+};
+
 //Servicio para obtener todos los usuarios
  exports.getAllUsers = async() =>{
     const users = await User.getAllUsers();
