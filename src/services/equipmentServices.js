@@ -13,14 +13,12 @@ exports.createEquipment = async (descripcion, tipo, numero_serie, fecha_registro
 
 // Obtener todos los equipos
 exports.getAllEquipments = async () => {
-    try {
-        const equipments = await Equipment.getAllEquipments();
-        return equipments;
-    } catch (error) {
-        console.error('Error al obtener los equipos:', error);
-        throw error;
-    }
-};
+    return await Equipment.findAll({
+        where: {
+            estado: 1 // Filtrando solo los equipos activos
+        }
+    });
+}
 
 // Obtener un equipo por ID
 exports.getEquipmentById = async (id) => {

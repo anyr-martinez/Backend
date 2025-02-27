@@ -35,7 +35,7 @@ const createEquipment = async (req, res) => {
 const getAllEquipments=async(req,res,next)=>{
     try{
         const equipments=await equipmentService.getAllEquipments();
-        res.status(200).json({equipments})
+        res.status(200).json({data: equipments})
     }catch(error){
         next(error);
     }
