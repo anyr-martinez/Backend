@@ -10,7 +10,6 @@ exports.createEquipment = async (descripcion, tipo, numero_serie, fecha_registro
     return await Equipment.createEquipment(descripcion, tipo, numero_serie, fecha_registro);
 };
 
-
 // Obtener todos los equipos
 exports.getAllEquipments = async () => {
     try {
@@ -69,10 +68,6 @@ exports.updateEquipment = async (id, data) => {
     }
 };
 
-
-
-
-
 // Eliminar un equipo
 exports.deleteEquipment=async(id)=>{
     try {
@@ -83,7 +78,7 @@ exports.deleteEquipment=async(id)=>{
         }
     
         await Equipment.deleteEquipment(id);
-        return {message: 'Equipo Eliminado'};
+        return {id, message: 'Equipo Eliminado'};
     } catch (error) {
         throw new Error(error.message);
     }

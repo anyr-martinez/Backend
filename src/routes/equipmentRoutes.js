@@ -285,10 +285,9 @@ router.get('/equipments/:id', equipmentController.getEquipmentById);
 router.put('/updateEquipment/:id', validarJWT,validarCampos,equipmentController.updateEquipment);
 
 // Eliminar un equipo (actualizar estado a 0)
-//Documentacion para eliminar un equipo
 /**
  * @swagger
- * /api/equipment/deleteEquipment:
+ * /api/equipment/deleteEquipment/{id}:
  *   delete:
  *     summary: 'Eliminar un equipo'
  *     security:
@@ -296,16 +295,13 @@ router.put('/updateEquipment/:id', validarJWT,validarCampos,equipmentController.
  *     description: 'Permite eliminar un equipo específico usando su ID. Los equipos inhabilitados (estado 0) no pueden ser eliminados, y si ya están inhabilitados, se retorna un mensaje indicando que ya está eliminado.'
  *     tags:
  *       - Equipos
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               equipmentId:
- *                 type: integer
- *                 description: 'ID del equipo a eliminar'
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: 'ID del equipo a eliminar'
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: 'Equipo eliminado exitosamente'
@@ -355,7 +351,7 @@ router.put('/updateEquipment/:id', validarJWT,validarCampos,equipmentController.
  *                   example: 'Error al eliminar el equipo'
  */
 
-router.delete('/deleteEquipment', validarJWT,equipmentController.deleteEquipment);
+router.delete('/deleteEquipment/:id', validarJWT, validarCampos,equipmentController.deleteEquipment);
 
 
 module.exports = router;

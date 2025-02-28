@@ -117,10 +117,10 @@ const updateEquipment = async (req, res, next) => {
 //Eliminar un equipo
 const deleteEquipment = async (req, res, next) => {
     try {
-        const { equipmentId } = req.body;  // El ID del equipo a eliminar
+        const { id } = req.params;  // El ID del equipo a eliminar
 
         // Verificar si el equipo existe
-        const equipment = await equipmentService.getEquipmentById(equipmentId);
+        const equipment = await equipmentService.getEquipmentById(id);
         if (!equipment) {
             return res.status(404).json({ message: 'Equipo no encontrado' });
         }
@@ -131,7 +131,7 @@ const deleteEquipment = async (req, res, next) => {
         }
 
         // Llamar al servicio para eliminar el equipo
-        const deletedEquipment = await equipmentService.deleteEquipment(equipmentId);
+        const deletedEquipment = await equipmentService.deleteEquipment(id);
 
         // Respuesta exitosa
         res.status(200).json({ message: 'Equipo eliminado exitosamente', data: deletedEquipment });
