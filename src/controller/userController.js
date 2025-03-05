@@ -137,6 +137,21 @@ const Alluser = async (req, res, next) => {
     }
 };
 
+//Buscar usuario por usuario
+const getByUser = async (req, res, next) => {
+    try {
+        const { username } = req.params;  
+        const user = await userService.getByUser(username); // Llamas al servicio pasando el username
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+        res.status(200).json({ user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 
 // Controlador para obtener un usuario por su ID y verificar si está activo
 const getUserById = async (req, res, next) => {
@@ -201,6 +216,7 @@ module.exports={
     updatePassword,
     deleteU,
     Alluser,
+    getByUser,
     getUserById
 };
 

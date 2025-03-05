@@ -24,7 +24,7 @@ exports.register=async(nombre,usuario,contrasena)=>{
 //servicio de logeo para usuario
 exports.login = async (usuario, contrasena) => {
   try {
-      const user = await User.getUserByuser(usuario);
+      const user = await User.getByUser(usuario);
       if (!user) {
           throw new Error("Usuario o contraseña incorrecto");
       }
@@ -62,6 +62,11 @@ exports.login = async (usuario, contrasena) => {
   return users;
 }
 
+//Servicio para obtener usuario por usuario
+exports.getByUser = async(username) =>{
+    const user = await User.getByUser(username);
+    return user;
+}
 // Servicio para obtener usuario por ID
 exports.getUserById = async (id) => {
     return await User.getUserById(id);  

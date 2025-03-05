@@ -56,15 +56,10 @@ const Equipment = {
         // Convertir la fecha al formato correcto
         const formattedDate = moment(fecha_registro).format('YYYY-MM-DD');
 
-        console.log("Datos antes de actualizar:");
-        console.log({ id, descripcion, tipo, numero_serie, formattedDate });
-
         // Ejecutar la consulta
         const query = 'UPDATE equipos SET descripcion = ?, tipo = ?, numero_serie = ?, fecha_registro = ? WHERE id_equipo = ?';
-        const [result] = await pool.execute(query, [descripcion, tipo, numero_serie, formattedDate, id]); 
-        
-        console.log("Resultado de la actualización:", result);
-        return result;
+        const [data] = await pool.execute(query, [descripcion, tipo, numero_serie, formattedDate, id]); 
+        return data;
     },
 
     // Eliminar un equipo (en lugar de eliminar, actualizamos el estado)

@@ -14,7 +14,7 @@ const {validarCampos} = require('../middlewares/validar-campos');
  *     summary: Crear un nuevo mantenimiento
  *     description: Este endpoint permite crear un nuevo mantenimiento solo si el equipo está activo (estado diferente a 0).
  *     tags: 
- *         - Mantenimientos
+ *       - Mantenimientos
  *     requestBody:
  *       required: true
  *       content:
@@ -91,7 +91,7 @@ const {validarCampos} = require('../middlewares/validar-campos');
  *                   type: string
  *                   example: "Error al crear el mantenimiento."
  */
-router.post('/create', checkEquipoStatus, validarJWT,validarCampos,maintenanceController.createMaintenance);
+router.post('/create', checkEquipoStatus, validarJWT, validarCampos, maintenanceController.createMaintenance);
 
 //Documentacion para mostrar todos los mantenimientos existentes
 /**

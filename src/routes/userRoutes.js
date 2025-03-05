@@ -214,7 +214,7 @@ router.put('/updateUser/:id', validarJWT,userController.updateUser);
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/updatePassword/:id', validarJWT,userController.updatePassword);
+router.put('/updatePassword/:id', validarCampos,userController.updatePassword);
 
 
 //Documentacion de mostrar los usuarios existentes
@@ -308,6 +308,53 @@ router.get('/user', userController.Alluser);
  */
 router.get('/:id', userController.getUserById);
 
+
+// Documentación para obtener usuario por nombre de usuario
+/**
+ * @swagger
+ * /api/users/user/{username}:
+ *   get:
+ *     summary: Obtener los detalles de un usuario por nombre de usuario
+ *     description: Obtiene los detalles de un usuario, incluyendo su estado, basado en el nombre de usuario.
+ *     tags:
+ *       - Usuarios
+ *     parameters:
+ *       - name: username
+ *         in: path
+ *         required: true
+ *         description: Nombre de usuario único para buscar el usuario.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Detalles del usuario si está activo.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Estado del usuario (activo o inactivo).
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id_usuario:
+ *                       type: integer
+ *                     usuario:
+ *                       type: string
+ *                     nombre:
+ *                       type: string
+ *                     estado:
+ *                       type: integer
+ *       400:
+ *         description: El parámetro `username` es requerido.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+router.get('/user/:username', userController.getByUser);
 
 //Documentacion de eliminar o inhabilitar un usuario
 /**

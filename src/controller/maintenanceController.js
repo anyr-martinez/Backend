@@ -1,24 +1,33 @@
 const maintenanceService = require('../services/maintenanceServices');
 const checkEquipoStatus = require('../middlewares/checkEquipoStatus');
 const equipmentService = require ('../services/equipmentServices');
+const { Equipment } = require('../models/equipmentModel');
 
 // Crear un nuevo mantenimiento
 const createMaintenance = async (req, res) => {
     try {
         console.log("Datos recibidos en la solicitud:", req.body);
 
-        const { id_equipo, descripcion, fecha_entrada, fecha_salida} = req.body;
+        const { id_equipo, descripcion, fecha_entrada, fecha_salida } = req.body;
 
-        if (!id_equipo || !descripcion || !fecha_entrada || !fecha_salida ) {
+        if (!id_equipo || !descripcion || !fecha_entrada || !fecha_salida) {
             return res.status(400).json({ message: "Todos los campos son obligatorios" });
         }
 
-        // Si pasa el middleware, se crea el mantenimiento
+        // Validar si el equipo existe y está activo
+        const equipo = await equipmentService.getEquipmentById(id_equipo);
+
+        if (!equipo) {
+            return res.status(404).json({ message: "El equipo no existe o está inactivo" });
+        }
+
+        // Si pasa la validación, se crea el mantenimiento
         const result = await maintenanceService.createMaintenance(id_equipo, descripcion, fecha_entrada, fecha_salida);
 
         res.status(201).json({
             message: "Mantenimiento creado exitosamente",
-            data: result
+            data: result,
+            equipo: equipo // Información del equipo incluida en la respuesta
         });
     } catch (error) {
         console.error("Error al crear mantenimiento:", error.message);

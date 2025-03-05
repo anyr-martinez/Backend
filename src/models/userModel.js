@@ -27,8 +27,8 @@ const User = {
     },  
 
     //Obtener un usuario por Usuario
-    getUserByuser: async (usuario) => {
-        const query = 'SELECT * FROM usuarios WHERE usuario = ?';
+    getByUser: async (usuario) => {
+        const query = 'SELECT * FROM usuarios WHERE BINARY usuario = ?';
         const [rows] = await pool.execute(query, [usuario]);
         return rows[0];
     },

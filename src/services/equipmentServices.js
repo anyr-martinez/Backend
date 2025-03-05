@@ -1,4 +1,4 @@
-
+const pool = require('../utils/db');
 const Equipment = require('../models/equipmentModel');
 
 // Crear un nuevo equipo
@@ -24,13 +24,26 @@ exports.getAllEquipments = async () => {
 // Obtener un equipo por ID
 exports.getEquipmentById = async (id) => {
     try {
-        const equipment = await Equipment.getEquipmentById(id);
-        return equipment;
+        const query = `
+            SELECT id_equipo, descripcion, tipo, numero_serie 
+            FROM equipos 
+            WHERE id_equipo = ? AND estado = 1
+        `;
+        const [rows] = await pool.execute(query, [id]);
+        
+        // Si la consulta devuelve un resultado, se devuelve la primera fila
+        if (rows.length > 0) {
+            return rows[0];  // Devolver el primer equipo encontrado
+        } else {
+            return null;  // Si no se encuentra, retornar null
+        }
     } catch (error) {
         console.error('Error al obtener el equipo por ID:', error);
         throw error;
     }
 };
+
+
 
 // Actualizar el estado o la descripción de un equipo
 exports.updateEquipment = async (id, data) => {

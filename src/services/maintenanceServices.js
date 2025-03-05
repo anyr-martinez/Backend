@@ -11,15 +11,28 @@ exports.getEquipoById = async (id_equipo) => {
 
 // Crear un mantenimiento
 exports.createMaintenance = async (id_equipo, descripcion, fecha_entrada, fecha_salida) => {
-    const query = 'INSERT INTO mantenimientos (id_equipo, descripcion, fecha_entrada, fecha_salida) VALUES ( ?, ?, ?, ?)';
-    const [result] = await pool.execute(query, [id_equipo, descripcion, fecha_entrada, fecha_salida]);
-    return result;
+    try {
+        const query = `
+            INSERT INTO mantenimientos (id_equipo, descripcion, fecha_entrada, fecha_salida) 
+            VALUES (?, ?, ?, ?)
+        `;
+        const [result] = await pool.execute(query, [id_equipo, descripcion, fecha_entrada, fecha_salida]);
+
+        if (result.affectedRows > 0) {
+            return { id: result.insertId, id_equipo, descripcion, fecha_entrada, fecha_salida };
+        } else {
+            throw new Error("No se pudo insertar el mantenimiento");
+        }
+    } catch (error) {
+        console.error("Error en createMaintenance:", error.message);
+        throw error;
+    }
 };
 
 // Obtener todos los mantenimientos
 exports.getAllMaintenances = async () => {
     try {
-      const query = `SELECT m.*, e.descripcion AS equipo_descripcion
+      const query = `SELECT m.*, e.tipo AS equipo_descripcion, e.numero_serie
                      FROM mantenimientos m
                      INNER JOIN equipos e ON m.id_equipo = e.id_equipo`;
       const [result] = await pool.execute(query);
@@ -27,7 +40,7 @@ exports.getAllMaintenances = async () => {
     } catch (error) {
       throw new Error('Error al obtener mantenimientos: ' + error.message);
     }
-},
+};
 
 // Actualizar el mantenimiento
 exports.getMaintenanceById = async (id_mantenimiento) => {

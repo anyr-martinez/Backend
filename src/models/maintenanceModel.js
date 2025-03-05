@@ -5,22 +5,22 @@ const Maintenance = {
     // Crear un nuevo mantenimiento
     createMaintenance: async (id_equipo, descripcion, fecha_entrada, fecha_salida) => {
         // Verificar si el equipo existe y si su estado es diferente de "0" (eliminado)
-        const [maintenance] = await pool.execute('SELECT * FROM mantenimientos WHERE id_mantenimiento = ? AND estado != 0', [id_mantenimiento]);
-
-        if (maintenance.length === 0) {
-            throw new Error('El mantenimiento no existe o está eliminado.');
+        const [equipment] = await pool.execute('SELECT * FROM equipos WHERE id_equipo = ? AND estado != 0', [id_equipo]);
+    
+        if (equipment.length === 0) {
+            throw new Error('El equipo no existe o está eliminado.');
         }
-
+    
         // Crear el mantenimiento
         const query = `
             INSERT INTO mantenimientos (id_equipo, descripcion, fecha_entrada, fecha_salida)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?)
         `;
         const [result] = await pool.execute(query, [id_equipo, descripcion, fecha_entrada, fecha_salida]);
-
+    
         return result;
     },
-
+    
     // Obtener mantenimientos por equipo
     getMaintenanceByEquipment: async (id_mantenimiento) => {
         const query = `
