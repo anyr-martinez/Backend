@@ -178,9 +178,6 @@ router.get('/maintenances', maintenanceController.getAllMaintenances);
  *           schema:
  *             type: object
  *             properties:
- *               id_equipo:
- *                 type: integer
- *                 description: ID del equipo al que está asociado el mantenimiento.
  *               descripcion:
  *                 type: string
  *                 description: Descripción del mantenimiento.
@@ -202,7 +199,7 @@ router.get('/maintenances', maintenanceController.getAllMaintenances);
  *       500:
  *         description: Error interno del servidor.
  */
-router.put('/updateMaintenance/:id', checkMaintenanceStatus, checkEquipoStatus,validarCampos, validarJWT, maintenanceController.updateMaintenance);
+router.put('/updateMaintenance/:id', checkMaintenanceStatus, validarCampos, validarJWT, maintenanceController.updateMaintenance);
 
 
 //Documentacion para llamar al mantenimiento mediante ID
@@ -285,25 +282,25 @@ router.put('/updateMaintenance/:id', checkMaintenanceStatus, checkEquipoStatus,v
  */
 router.get('/maintenance/:id', maintenanceController.getMaintenanceById);
 
-//Docuementacion para eliminar un mantenimiento
+// Documentación para deshabilitar o eliminar un mantenimiento
 /**
  * @swagger
- * /api/maintenance/deleteMaintenance/{id_mantenimiento}:
+ * /api/maintenance/deleteMaintenance/{id}:
  *   delete:
- *     summary: 'Eliminar un mantenimiento'
- *     description: 'Permite eliminar un mantenimiento específico, cambiando su estado a inhabilitado (estado = 0).'
+ *     summary: 'Deshabilitar un mantenimiento'
+ *     description: 'Permite deshabilitar un mantenimiento específico, cambiando su estado a inhabilitado (estado = 0).'
  *     tags:
  *       - Mantenimientos
  *     parameters:
- *       - name: 'id_mantenimiento'
+ *       - name: 'id'
  *         in: 'path'
  *         required: true
- *         description: 'ID del mantenimiento a eliminar'
+ *         description: 'ID del mantenimiento a deshabilitar'
  *         schema:
  *           type: 'integer'
  *     responses:
  *       200:
- *         description: 'Mantenimiento eliminado exitosamente'
+ *         description: 'Mantenimiento deshabilitado exitosamente'
  *         content:
  *           application/json:
  *             schema:
@@ -311,9 +308,9 @@ router.get('/maintenance/:id', maintenanceController.getMaintenanceById);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: 'Mantenimiento eliminado exitosamente'
+ *                   example: 'Mantenimiento deshabilitado exitosamente'
  *       400:
- *         description: 'El mantenimiento ya está terminado'
+ *         description: 'El mantenimiento ya está deshabilitado o terminado'
  *         content:
  *           application/json:
  *             schema:
@@ -321,7 +318,7 @@ router.get('/maintenance/:id', maintenanceController.getMaintenanceById);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: 'El mantenimiento ya está terminado'
+ *                   example: 'El mantenimiento ya está deshabilitado'
  *       404:
  *         description: 'Mantenimiento no encontrado'
  *         content:
@@ -343,5 +340,6 @@ router.get('/maintenance/:id', maintenanceController.getMaintenanceById);
  *                   type: string
  *                   example: 'Error interno del servidor'
  */
-router.delete('/deleteMaintenance/:id_mantenimiento', checkMaintenanceStatus, validarCampos,validarJWT, maintenanceController.deleteMaintenance);
+router.delete('/deleteMaintenance/:id', checkMaintenanceStatus, validarCampos, validarJWT, maintenanceController.deleteMaintenance);
+
 module.exports = router;

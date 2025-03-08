@@ -37,48 +37,79 @@ const createMaintenance = async (req, res) => {
 
 // Obtener todos los mantenimientos
 const getAllMaintenances = async (req, res) => {
-  try {
-    const maintenances = await maintenanceService.getAllMaintenances();
-    if (maintenances.length === 0) {
-      return res.status(404).json({ message: 'No se encontraron mantenimientos' });
+    try {
+      const maintenances = await maintenanceService.getAllMaintenances({
+        where: {
+          estado: 1, 
+        },
+        include: [
+          {
+            model: Equipment,
+            where: { estado: 1 }, 
+          }
+        ]
+      });
+  
+      if (maintenances.length === 0) {
+        return res.status(404).json({ message: 'No se encontraron mantenimientos con los criterios especificados' });
+      }
+  
+      res.status(200).json({
+        message: 'Mantenimientos obtenidos exitosamente',
+        data: maintenances
+      });
+    } catch (error) {
+      console.error("Error al obtener mantenimientos:", error.message);
+      res.status(500).json({ message: "Error interno del servidor", error: error.message });
     }
-    res.status(200).json({
-      message: 'Mantenimientos obtenidos exitosamente',
-      data: maintenances
-    });
-  } catch (error) {
-    console.error("Error al obtener mantenimientos:", error.message);
-    res.status(500).json({ message: "Error interno del servidor", error: error.message });
-  }
-};
+  };
+  
 
 // Actualizar un mantenimiento
 const updateMaintenance = async (req, res, next) => {
     try {
         // Obtener los datos de la solicitud
         const { id } = req.params;
-        const { id_equipo, descripcion, fecha_entrada, fecha_salida } = req.body;
+        const { descripcion, fecha_entrada, fecha_salida } = req.body;
 
-        // Validación básica de los campos
-        if (!id_equipo || !descripcion || !fecha_entrada || !fecha_salida) {
+        // Verificar que el ID sea válido
+        if (!id) {
+            return res.status(400).json({ message: "ID del mantenimiento es requerido" });
+        }
+        console.log("ID recibido:", id);
+
+        // Validar que los campos requeridos estén presentes
+        if (!descripcion || !fecha_entrada || !fecha_salida) {
             return res.status(400).json({ message: "Todos los campos son obligatorios" });
         }
 
-        // Actualizar el mantenimiento utilizando el servicio
+        // Obtener el mantenimiento antes de actualizar
+        const maintenance = await maintenanceService.getMaintenanceById(id);
+        console.log("Mantenimiento encontrado antes de actualizar:", maintenance);
+
+        if (!maintenance) {
+            return res.status(404).json({ message: "Mantenimiento no encontrado o inactivo" });
+        }
+
+        // Actualizar el mantenimiento
         const updatedMaintenance = await maintenanceService.updateMaintenance(id, {
-            id_equipo,
             descripcion,
             fecha_entrada,
             fecha_salida
         });
 
-        // Retornar respuesta exitosa
+        // Verificar si la actualización se realizó correctamente
+        if (!updatedMaintenance) {
+            return res.status(500).json({ message: "No se pudo actualizar el mantenimiento" });
+        }
+
         res.status(200).json({ message: "Mantenimiento actualizado exitosamente", data: updatedMaintenance });
     } catch (error) {
         console.error("Error al actualizar el mantenimiento:", error.message);
-        next(error);  // Pasa el error al manejador global de errores
+        next(error);
     }
 };
+
 
 
 
@@ -110,10 +141,10 @@ const getMaintenanceById = async (req, res) => {
 //Eliminar o deshabilitar un mantenimiento
 const deleteMaintenance = async (req, res) => {
     try {
-        const { id_mantenimiento } = req.params;
+        const { id } = req.params;
 
         // Verificar si el mantenimiento existe y su estado
-        const maintenance = await maintenanceService.deleteMaintenance(id_mantenimiento);
+        const maintenance = await maintenanceService.getMaintenanceById(id);
         if (!maintenance) {
             return res.status(404).json({ message: "Mantenimiento no encontrado" });
         }
@@ -124,7 +155,7 @@ const deleteMaintenance = async (req, res) => {
         }
 
         // Deshabilitar el mantenimiento
-        await maintenanceService.deleteMaintenance(id_mantenimiento);
+        await maintenanceService.deleteMaintenance(id);
 
         res.status(200).json({
             message: "Mantenimiento eliminado exitosamente"

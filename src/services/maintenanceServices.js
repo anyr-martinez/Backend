@@ -32,36 +32,41 @@ exports.createMaintenance = async (id_equipo, descripcion, fecha_entrada, fecha_
 // Obtener todos los mantenimientos
 exports.getAllMaintenances = async () => {
     try {
-      const query = `SELECT m.*, e.tipo AS equipo_descripcion, e.numero_serie
-                     FROM mantenimientos m
-                     INNER JOIN equipos e ON m.id_equipo = e.id_equipo`;
-      const [result] = await pool.execute(query);
-      return result;
+        const query = `SELECT m.*, e.tipo AS equipo_descripcion, e.numero_serie
+                       FROM mantenimientos m
+                       INNER JOIN equipos e ON m.id_equipo = e.id_equipo
+                       WHERE m.estado = 1 AND e.estado = 1`;  // Filtrar por estado = 1 en ambas tablas
+        const [result] = await pool.execute(query);
+        return result;
     } catch (error) {
-      throw new Error('Error al obtener mantenimientos: ' + error.message);
+        throw new Error('Error al obtener mantenimientos: ' + error.message);
     }
 };
 
+
 // Actualizar el mantenimiento
-exports.getMaintenanceById = async (id_mantenimiento) => {
+exports.getMaintenanceById = async (id) => {
     try {
-        return await Maintenance.getMaintenanceById(id_mantenimiento);
+        const query = `SELECT * FROM mantenimientos WHERE id_mantenimiento = ? AND estado = 1`;
+        const [rows] = await pool.execute(query, [id]);
+        return rows.length > 0 ? rows[0] : null;
     } catch (error) {
         throw new Error('Error al obtener el mantenimiento: ' + error.message);
     }
 };
 
-// Actualizar mantenimiento por ID
 exports.updateMaintenance = async (id_mantenimiento, data) => {
     try {
-        const maintenance = await Maintenance.getMaintenanceById(id_mantenimiento);
+        // Verificar si el mantenimiento existe
+        const maintenance = await exports.getMaintenanceById(id_mantenimiento);
 
         if (!maintenance) {
-            throw new Error('Mantenimiento no encontrado');
+            throw new Error('Mantenimiento no encontrado o inactivo');
         }
 
+        // Ejecutar la actualización
         const updated = await Maintenance.updateMaintenanceById(id_mantenimiento, data);
-        
+
         if (!updated) {
             throw new Error('No se pudo actualizar el mantenimiento');
         }
@@ -73,9 +78,9 @@ exports.updateMaintenance = async (id_mantenimiento, data) => {
 };
 
 //Obtener un mantenimiento por ID
-exports.getMaintenanceById = async (id_mantenimiento) => {
+exports.getMaintenanceById = async (id) => {
     const query = "SELECT * FROM mantenimientos WHERE id_mantenimiento = ?";
-    const [result] = await pool.execute(query, [id_mantenimiento]);
+    const [result] = await pool.execute(query, [id]);
     return result.length > 0 ? result[0] : null;
 };
 
