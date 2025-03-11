@@ -3,9 +3,9 @@ const router=express.Router();
 const userController = require('../controller/userController');
 const {validarJWT} = require('../middlewares/validar-jwt');
 const {validarCampos} = require('../middlewares/validar-campos');
+const {validarRol} = require('../middlewares/validar-rol');
 
 //rutas de logeo
-//Documentacion de Registro de Usuarios 
 /**
  * @swagger
  * /api/users/register:
@@ -28,6 +28,10 @@ const {validarCampos} = require('../middlewares/validar-campos');
  *               contrasena:
  *                 type: string
  *                 description: La contraseña del usuario
+ *               rol:
+ *                 type: string
+ *                 description: El rol del usuario (por ejemplo, 'admin' o 'usuario')
+ *                  
  *     responses:
  *       200:
  *         description: Usuario registrado correctamente
@@ -72,7 +76,7 @@ router.post('/login', validarCampos, userController.login);
  *     tags:
  *       - Usuarios
  *     summary: Actualizar datos de un usuario
- *     description: Actualiza el nombre y el usuario de un usuario específico.
+ *     description: Actualiza el nombre, el usuario y el rol de un usuario específico.
  *     parameters:
  *       - name: id
  *         in: path
@@ -94,6 +98,9 @@ router.post('/login', validarCampos, userController.login);
  *               usuario:
  *                 type: string
  *                 example: "nuevo_usuario"
+ *               rol:
+ *                 type: string
+ *                 example: "admin"
  *     responses:
  *       200:
  *         description: Usuario actualizado correctamente
@@ -117,6 +124,9 @@ router.post('/login', validarCampos, userController.login);
  *                     usuario:
  *                       type: string
  *                       example: "nuevo_usuario"
+ *                     rol:
+ *                       type: string
+ *                       example: "admin o usuario"
  *       400:
  *         description: Error en la solicitud (por ejemplo, usuario eliminado)
  *         content:
@@ -140,8 +150,7 @@ router.post('/login', validarCampos, userController.login);
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/updateUser/:id', validarJWT,userController.updateUser);
-
+router.put('/updateUser/:id', validarJWT, userController.updateUser);
 
 //Docuemtacion de la actualizaion de contrasena
 /**
@@ -214,7 +223,7 @@ router.put('/updateUser/:id', validarJWT,userController.updateUser);
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/updatePassword/:id', validarCampos,userController.updatePassword);
+router.put('/updatePassword/:id', validarCampos, validarJWT,userController.updatePassword);
 
 
 //Documentacion de mostrar los usuarios existentes
@@ -245,6 +254,9 @@ router.put('/updatePassword/:id', validarCampos,userController.updatePassword);
  *                   usuario:
  *                     type: string
  *                     description: Nombre de usuario único para el login.
+ *                   rol:
+ *                     type: string
+ *                     description: Rol que tiene el usuario.
  *       400:
  *         description: Error en la solicitud.
  *         content:
@@ -260,7 +272,6 @@ router.put('/updatePassword/:id', validarCampos,userController.updatePassword);
  *       500:
  *         description: Error interno del servidor.
  */
-
 router.get('/user', userController.Alluser);
 
 //Documentacion para obtener usuario por ID
@@ -312,14 +323,14 @@ router.get('/:id', userController.getUserById);
 // Documentación para obtener usuario por nombre de usuario
 /**
  * @swagger
- * /api/users/user/{username}:
+ * /api/users/users/{usuario}:
  *   get:
  *     summary: Obtener los detalles de un usuario por nombre de usuario
  *     description: Obtiene los detalles de un usuario, incluyendo su estado, basado en el nombre de usuario.
  *     tags:
  *       - Usuarios
  *     parameters:
- *       - name: username
+ *       - name: usuario
  *         in: path
  *         required: true
  *         description: Nombre de usuario único para buscar el usuario.
@@ -354,7 +365,7 @@ router.get('/:id', userController.getUserById);
  *       500:
  *         description: Error interno del servidor.
  */
-router.get('/user/:username', userController.getByUser);
+router.get('/users/:usuario', userController.getByUser);
 
 //Documentacion de eliminar o inhabilitar un usuario
 /**
@@ -407,6 +418,6 @@ router.get('/user/:username', userController.getByUser);
  *       500:
  *         description: 'Error interno del servidor'
  */
-router.delete('/deleteUser/:id',validarJWT,userController.deleteU);
+router.delete('/deleteUser/:id',validarJWT, userController.deleteU);
 
 module.exports=router;
