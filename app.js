@@ -26,7 +26,7 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0', // Versión de OpenAPI
     info: {
-      title: 'API DE GESTION DE INVENTARIO DE EQUIPOS DE TI',
+      title: 'API DE GESTION DE INVENTARIO EQUIPOS TI',
       version: '1.0.0',
       description: 'Documentación para la API de manejo de usuarios (registro, login, actualización, etc.)',
     },

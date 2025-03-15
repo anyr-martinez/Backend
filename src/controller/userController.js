@@ -90,10 +90,10 @@ const updatePassword = async (req, res, next) => {
         const { id } = req.params;
         
         // Obtener la nueva contraseña desde el cuerpo de la solicitud
-        const { newPass } = req.body;
+        const { contrasena } = req.body;
 
         // Verificar que ambos parámetros estén presentes
-        if (!id || !newPass) {
+        if (!id || !contrasena) {
             return res.status(400).json({ message: "El ID del usuario y la nueva contraseña son obligatorios" });
         }
         // Verificar si el usuario existe
@@ -107,7 +107,7 @@ const updatePassword = async (req, res, next) => {
             return res.status(400).json({ message: 'El usuario está eliminado o deshabilitado' });
         }
         // Llamar al servicio para actualizar la contraseña
-        const updatedPass = await userService.updatePassword(id, newPass);
+        const updatedPass = await userService.updatePassword(id, contrasena);
 
         // Enviar la respuesta si la contraseña fue actualizada
         res.status(200).json(updatedPass);

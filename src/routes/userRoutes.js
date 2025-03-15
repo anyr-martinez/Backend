@@ -176,9 +176,9 @@ router.put('/updateUser/:id', validarJWT, userController.updateUser);
  *           schema:
  *             type: object
  *             properties:
- *               newPass:
+ *               contrasena:
  *                 type: string
- *                 example: "Nueva contrasena"        
+ *                       
  *     responses:
  *       200:
  *         description: Contrasena actualizado correctamente

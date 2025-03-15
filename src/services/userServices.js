@@ -104,31 +104,30 @@ exports.updateUser = async (id_usuario, { nombre, usuario, rol }) => {
     }
 };
 
-
-
-//Servicio para cambiar contrasena
-exports.updatePassword = async (id, newPass) => {
+//Servicio para actualizar contrasena
+exports.updatePassword = async (id, contrasena) => {
     try {
+        if (!id || !contrasena) {
+            throw new Error("ID de usuario y nueva contraseña son requeridos");
+        }
+
         // Encriptar la nueva contraseña
-        const hashedPassword = await bcrypt.hash(newPass, 12);
-        console.log("Contraseña encriptada:", hashedPassword);
+        const hashedPassword = await bcrypt.hash(contrasena, 12);
 
         // Actualizar la contraseña en la base de datos
         const query = 'UPDATE usuarios SET contrasena = ? WHERE id_usuario = ?';
         const [result] = await pool.execute(query, [hashedPassword, id]);
 
-        console.log("Resultado de la actualización:", result);
-
         if (result.affectedRows === 0) {
-            throw new Error("No se pudo actualizar la contraseña. El Usuario no existe");
+            throw new Error("No se pudo actualizar la contraseña. El usuario no existe");
         }
 
         return { message: "Contraseña actualizada correctamente" };
     } catch (error) {
-        console.error("Error en updatePassword:", error.message);
-        throw error;  // Lanza el error para ser manejado por el controlador
+        console.error("Error en updatePassword:", error.message || error);
+        throw new Error("Error al actualizar la contraseña");
     }
-}
+};
 
 //Servicio para deshabilitar usuario
 exports.deleteU = async (id) => {

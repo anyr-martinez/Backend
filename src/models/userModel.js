@@ -50,9 +50,9 @@ const User = {
     
 
     // Cambiar la contraseña de un usuario
-    updatePassword: async (id, newPass) => {
+    updatePassword: async (id, contrasena) => {
     const query = 'UPDATE usuarios SET contrasena = ? WHERE id_usuario = ?';
-    const [result] = await pool.execute(query, [newPass, id]);
+    const [result] = await pool.execute(query, [contrasena, id]);
     return result;
     },
 
