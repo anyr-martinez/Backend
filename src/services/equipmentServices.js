@@ -44,7 +44,6 @@ exports.getEquipmentById = async (id) => {
 };
 
 
-
 // Actualizar el estado o la descripción de un equipo
 exports.updateEquipment = async (id, data) => {
     try {

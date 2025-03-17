@@ -28,6 +28,8 @@
     "morgan": "^1.10.0",
     "mysql2": "^3.12.0",
     "open": "^10.1.0",
+    "pdfkit": "^0.16.0",
+    "pdfkit-table": "^0.1.99",
     "sequelize": "^6.37.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"

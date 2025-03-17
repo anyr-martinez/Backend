@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const equipmentController = require('../controller/equipmentController');
+const reportesEquipos = require('../reports/reportesEquipos');
 const {validarJWT} = require('../middlewares/validar-jwt');
 const {validarCampos} = require('../middlewares/validar-campos');
 
@@ -352,6 +353,30 @@ router.put('/updateEquipment/:id', validarJWT,validarCampos,equipmentController.
  */
 
 router.delete('/deleteEquipment/:id', validarJWT, validarCampos,equipmentController.deleteEquipment);
+
+//Documentacion para reportes
+/**
+ * @swagger
+ * /api/equipment/reporte:
+ *   get:
+ *     summary: Generar reporte en PDF de equipos activos
+ *     description: Genera un reporte en formato PDF con la lista de equipos activos (estado 1).
+ *     tags:
+ *      - Equipos
+ *     responses:
+ *       200:
+ *         description: Reporte generado con éxito
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: No hay equipos activos disponibles para generar el reporte
+ *       500:
+ *         description: Error al generar el reporte
+ */
+router.get('/reporte', validarJWT,validarCampos,reportesEquipos.generateEquipmentReport);
 
 
 module.exports = router;
