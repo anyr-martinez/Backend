@@ -117,7 +117,7 @@ const updatePassword = async (req, res, next) => {
 };
 
 //Mostrar todos los usuarios existentes
-const Alluser = async (req, res, next) => {
+const getAllUsers = async (req, res, next) => {
     try {
         const users = await userService.getAllUsers();
         res.status(200).json({ data: users });
@@ -204,7 +204,7 @@ module.exports={
     updateUser,
     updatePassword,
     deleteU,
-    Alluser,
+    getAllUsers,
     getByUser,
     getUserById
 };

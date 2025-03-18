@@ -3,7 +3,6 @@ const router=express.Router();
 const userController = require('../controller/userController');
 const {validarJWT} = require('../middlewares/validar-jwt');
 const {validarCampos} = require('../middlewares/validar-campos');
-const {validarRol} = require('../middlewares/validar-rol');
 
 //rutas de logeo
 /**
@@ -272,7 +271,7 @@ router.put('/updatePassword/:id', validarCampos, validarJWT,userController.updat
  *       500:
  *         description: Error interno del servidor.
  */
-router.get('/user', userController.Alluser);
+router.get('/user', userController.getAllUsers);
 
 //Documentacion para obtener usuario por ID
 /**
@@ -419,5 +418,8 @@ router.get('/users/:usuario', userController.getByUser);
  *         description: 'Error interno del servidor'
  */
 router.delete('/deleteUser/:id',validarJWT, userController.deleteU);
+
+
+
 
 module.exports=router;

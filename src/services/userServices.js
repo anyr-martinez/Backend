@@ -63,10 +63,15 @@ exports.login = async (usuario, contrasena) => {
 
 
 //Servicio para obtener todos los usuarios
- exports.getAllUsers = async() =>{
-    const users = await User.getAllUsers();
-  return users;
-}
+exports.getAllUsers = async () => {
+    try {
+        const users = await User.getAllUsers();
+        return users;
+    } catch (error) {
+        console.error('Error al obtener los usuarios:', error);
+        throw error;
+    }
+};
 
 //Servicio para obtener usuario por usuario
 exports.getByUser = async(usuario) =>{
