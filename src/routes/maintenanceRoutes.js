@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const maintenanceController = require('../controller/maintenanceController');
+const reportesMantenimientos = require('../reports/reportesMantenimientos');
+const reportesMantenimientosInactivos  = require('../reports/reportesMantenimientosInactivos');
 const checkEquipoStatus = require('../middlewares/checkEquipoStatus');
 const checkMaintenanceStatus = require('../middlewares/checkMaintenanceStatus');
 const {validarJWT} = require('../middlewares/validar-jwt');
@@ -341,5 +343,205 @@ router.get('/maintenance/:id', maintenanceController.getMaintenanceById);
  *                   example: 'Error interno del servidor'
  */
 router.delete('/deleteMaintenance/:id', checkMaintenanceStatus, validarCampos, validarJWT, maintenanceController.deleteMaintenance);
+
+
+//Doumentacion de Reportes 
+/**
+ * @swagger
+ * /api/maintenance/report/date:
+ *   get:
+ *     summary: Generar reporte de mantenimiento por rango de fechas
+ *     description: Genera un reporte de mantenimiento basado en un rango de fechas (startDate y endDate).
+ *     tags:
+ *       - Mantenimientos
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string 
+ *           format: date
+ *         description: Fecha de inicio (en formato YYYY-MM-DD).
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha de fin (en formato YYYY-MM-DD).
+ *     responses:
+ *       200:
+ *         description: Reporte de mantenimiento generado exitosamente
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Parámetros inválidos
+ *       404:
+ *         description: No se encontraron mantenimientos en el rango de fechas
+ *       500:
+ *         description: Error al generar el reporte
+ */
+
+router.get('/report/date', validarCampos, validarJWT,reportesMantenimientos.generateMaintenanceReportByDate);
+
+/**
+ * @swagger
+ * /api/maintenance/report/type:
+ *   get:
+ *     summary: Generar reporte de mantenimiento por tipo de equipo
+ *     description: Genera un reporte de mantenimiento basado en el tipo de equipo.
+ *     tags:
+ *       - Mantenimientos
+ *     parameters:
+ *       - in: query
+ *         name: tipoEquipo
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Tipo de equipo.
+ *     responses:
+ *       200:
+ *         description: Reporte de mantenimiento generado exitosamente
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Parámetro 'tipoEquipo' inválido
+ *       404:
+ *         description: No se encontraron mantenimientos para el tipo de equipo
+ *       500:
+ *         description: Error al generar el reporte
+ */
+
+router.get('/report/type', validarCampos, validarJWT,reportesMantenimientos.generateMaintenanceReportByType);
+
+/**
+ * @swagger
+ * /api/maintenance/report:
+ *   get:
+ *     summary: Generar reporte general de mantenimiento
+ *     description: Genera un reporte general de todos los mantenimientos.
+ *     tags:
+ *       - Mantenimientos
+ *     responses:
+ *       200:
+ *         description: Reporte general de mantenimiento generado exitosamente
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: No se encontraron mantenimientos
+ *       500:
+ *         description: Error al generar el reporte
+ */
+
+router.get('/report',  validarCampos, validarJWT,reportesMantenimientos.generateGeneralMaintenanceReport);
+
+
+//REPORTES INACTIVOS EN ESTADO 0
+// Documentación para reporte de mantenimientos inactivos por fecha
+/**
+ * @swagger
+ * /api/maintenance/reports/inactiveDate:
+ *   get:
+ *     summary: Generar reporte de mantenimientos inactivos por fecha
+ *     description: Genera un reporte de mantenimientos inactivos dentro de un rango de fechas especificado.
+ *     tags:
+ *       - Mantenimientos
+ *     parameters:
+ *       - name: startDate
+ *         in: query
+ *         description: Fecha de inicio del rango.
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: endDate
+ *         in: query
+ *         description: Fecha de fin del rango.
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Reporte de mantenimientos inactivos por fecha generado correctamente.
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Parámetros inválidos o faltantes (startDate o endDate).
+ *       404:
+ *         description: No se encontraron mantenimientos inactivos en el rango de fechas proporcionado.
+ *       500:
+ *         description: Error al generar el reporte.
+ */
+router.get('/reports/inactiveDate', validarCampos, validarJWT,reportesMantenimientosInactivos.generateMaintenanceReportByDateInactive);
+
+// Documentación para reporte de mantenimientos inactivos por tipo de equipo
+/**
+ * @swagger
+ * /api/maintenance/reports/inactiveType:
+ *   get:
+ *     summary: Generar reporte de mantenimientos inactivos por tipo de equipo
+ *     description: Genera un reporte de mantenimientos inactivos filtrados por tipo de equipo.
+ *     tags:
+ *       - Mantenimientos
+ *     parameters:
+ *       - name: tipoEquipo
+ *         in: query
+ *         description: Tipo de equipo para filtrar los mantenimientos inactivos.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Reporte de mantenimientos inactivos por tipo generado correctamente.
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Parámetro de tipo de equipo faltante.
+ *       404:
+ *         description: No se encontraron mantenimientos inactivos para el tipo de equipo proporcionado.
+ *       500:
+ *         description: Error al generar el reporte.
+ */
+router.get('/reports/inactiveType', reportesMantenimientosInactivos.generateMaintenanceReportByTypeInactive);
+
+// Documentación para reporte general de mantenimientos inactivos
+/**
+ * @swagger
+ * /api/maintenance/reports/general-inactive:
+ *   get:
+ *     summary: Generar reporte general de mantenimientos inactivos
+ *     description: Genera un reporte general de todos los mantenimientos inactivos.
+ *     tags:
+ *       - Mantenimientos
+ *     responses:
+ *       200:
+ *         description: Reporte general de mantenimientos inactivos generado correctamente.
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: No se encontraron mantenimientos inactivos.
+ *       500:
+ *         description: Error al generar el reporte.
+ */
+router.get('/reports/general-inactive', validarCampos,validarJWT,reportesMantenimientosInactivos.generateGeneralMaintenanceReportInactive);
 
 module.exports = router;

@@ -378,5 +378,43 @@ router.delete('/deleteEquipment/:id', validarJWT, validarCampos,equipmentControl
  */
 router.get('/reporte', validarJWT,validarCampos,reportesEquipos.generateEquipmentReport);
 
+/**
+ * @swagger
+ * /api/equipment/reporte/inactivos:
+ *   get:
+ *     summary: Genera un reporte en PDF de equipos inactivos
+ *     tags:
+ *       - Equipos
+ *     description: Genera y descarga un archivo PDF con la lista de equipos inactivos (estado 0).
+ *     responses:
+ *       200:
+ *         description: El reporte de equipos inactivos ha sido generado correctamente y se descargará como un archivo PDF.
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: No hay equipos inactivos disponibles para generar el reporte.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: No hay equipos inactivos disponibles para generar el reporte.
+ *       500:
+ *         description: Error al generar el reporte de equipos inactivos.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   
+ */
+router.get('/reporte/inactivos', validarJWT,validarCampos,reportesEquipos.generateInactiveEquipmentReport);
 
 module.exports = router;

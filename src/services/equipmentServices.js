@@ -95,3 +95,10 @@ exports.deleteEquipment=async(id)=>{
         throw new Error(error.message);
     }
 };
+
+//Reporte para Equipos Inactivos
+exports.getInactivesEquipmnent = async () => {
+    const query = 'SELECT id_equipo, descripcion, tipo, numero_serie, fecha_registro, estado FROM equipos WHERE estado = 0';
+    const [rows] = await pool.execute(query);
+    return rows;
+};

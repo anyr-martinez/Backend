@@ -4,9 +4,8 @@ const path = require('path');
 const maintenanceService = require('../services/maintenanceServices');
 const PDFDocumentWithTables = require('pdfkit-table');
 
-
-//Reporte para fechas de mantenimiento
-const generateMaintenanceReportByDate = async (req, res) => {
+//REPORTE PARA MANTENIMIENTOS CON FECHA INACTIVOS
+const generateMaintenanceReportByDateInactive = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;  
 
@@ -17,38 +16,33 @@ const generateMaintenanceReportByDate = async (req, res) => {
         const start = new Date(startDate);
         const end = new Date(endDate);
 
-        const maintenances = await maintenanceService.getMaintenancesByDate(start, end);
+        // Filtrar mantenimientos por fecha y estado 0 (inactivo)
+        const maintenances = await maintenanceService.getMaintenancesByDateInactive(start, end, 0);
 
         if (!maintenances || maintenances.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron mantenimientos en el rango de fechas proporcionado.' });
+            return res.status(404).json({ message: 'No se encontraron mantenimientos inactivos en el rango de fechas proporcionado.' });
         }
 
         // Crear el directorio si no existe
-        const dirPath = path.join(__dirname, '../reports/reportesMantenimientoFecha');
+        const dirPath = path.join(__dirname, '../reports/reportesMantenimientoFechaInactivos');
         if (!fs.existsSync(dirPath)) {
             fs.mkdirSync(dirPath, { recursive: true });
         }
 
         // Crear el PDF
         const doc = new PDFDocumentWithTables(PDFDocument);
-        const filePath = path.join(dirPath, `reporte_mantenimiento_fecha.pdf`);
+        const filePath = path.join(dirPath, `reporte_mantenimiento_inactivo_fecha.pdf`);
         const fileStream = fs.createWriteStream(filePath);
         doc.pipe(fileStream);
 
         // Insertar el logo
         const logoPath = path.join(__dirname, '../assets/logo triangulo.png');
-        doc.image(logoPath, 45, 40, { width: 90 });
- 
+        doc.image(logoPath, 45, 55, { width: 100 });
 
         // Título del reporte
-        const pageWidth = doc.page.width;
-        const titleWidth = 400; 
-        const titleX = (pageWidth - titleWidth) / 2 + 20; 
-        
-        doc.font('Helvetica-Bold')
-           .fontSize(20)
-           .text(`Reporte de Mantenimientos Por Fecha`, titleX, doc.y, { width: titleWidth, align: 'center' });
-        
+        doc.font('Helvetica-Bold').fontSize(20).text(`Reporte de Mantenimiento Terminados`, { align: 'center' });
+        doc.text(`Por Fecha`, { align: 'center' });
+        doc.moveDown();
         // Definir la tabla
         const tableData = {
             headers: [
@@ -68,11 +62,11 @@ const generateMaintenanceReportByDate = async (req, res) => {
                 maintenance.fecha_salida ? new Date(maintenance.fecha_salida).toLocaleDateString() : 'N/A'
             ])
         };
-        
+
         // Establecer el lugar donde empieza la tabla
-        doc.x += -80; 
-        doc.y += 20;
-        
+          doc.x += -27; 
+          doc.y += 1;
+        // Agregar la tabla al documento
         const options = {
             prepareHeader: () => doc.font('Helvetica-Bold').fontSize(12),
             prepareRow: (row, i) => doc.font('Helvetica').fontSize(12),
@@ -82,25 +76,23 @@ const generateMaintenanceReportByDate = async (req, res) => {
             width: 530  
         };
         
-    
-        // Agregar la tabla
         doc.table(tableData, options);
 
-        // Agregar el total de mantenimientos
+        // Agregar el total de mantenimientos inactivos
         const totalMantenimientos = maintenances.length;
         doc.moveDown();
-        doc.font('Helvetica-Bold').fontSize(14).text(`Total de Mantenimientos Activos: ${totalMantenimientos}`, { align: 'right' });
+        doc.font('Helvetica-Bold').fontSize(14).text(`Total de Mantenimientos Inactivos: ${totalMantenimientos}`, { align: 'right' });
 
         // Finalizar el PDF
         doc.end();
 
         fileStream.on('finish', () => {
-            res.status(200).download(filePath, 'Reporte_mantenimiento_fecha.pdf', (err) => {
+            res.status(200).download(filePath, 'Reporte_mantenimiento_inactivo_fecha.pdf', (err) => {
                 if (err) {
                     console.log('Error al descargar el archivo:', err);
                     return res.status(500).json({ message: 'Hubo un error al intentar descargar el archivo.' });
                 } else {
-                    console.log('Reporte generado correctamente');
+                    console.log('Reporte  De fecha inactivos generado correctamente');
                 }
             });
         });
@@ -117,8 +109,8 @@ const generateMaintenanceReportByDate = async (req, res) => {
 };
 
 
-// Reporte de mantenimiento por tipo de equipo
-const generateMaintenanceReportByType = async (req, res) => {
+//REPORTE PARA REPORTE POR TIPO DE EQUIPO INACTIVOS
+const generateMaintenanceReportByTypeInactive = async (req, res) => {
     try {
         const { tipoEquipo } = req.query;
 
@@ -127,21 +119,21 @@ const generateMaintenanceReportByType = async (req, res) => {
         }
 
         // Filtrar mantenimientos por tipo de equipo
-        const maintenances = await maintenanceService.getMaintenancesByEquipmentType(tipoEquipo);
+        const maintenances = await maintenanceService.getMaintenancesByEquipmentTypeInactive(tipoEquipo);
 
         if (!maintenances || maintenances.length === 0) {
             return res.status(404).json({ message: `No se encontraron mantenimientos para el tipo de equipo: ${tipoEquipo}.` });
         }
 
         // Crear el directorio si no existe
-        const dirPath = path.join(__dirname, '../reports/reportesMantenimientoTipo');
+        const dirPath = path.join(__dirname, '../reports/reportesMantenimientoTipoInactivos');
         if (!fs.existsSync(dirPath)) {
             fs.mkdirSync(dirPath, { recursive: true });
         }
 
         // Crear un nuevo documento PDF
         const doc = new PDFDocumentWithTables(PDFDocument);
-        const filePath = path.join(dirPath, `mantenimiento_tipo_Equipo.pdf`);
+        const filePath = path.join(dirPath, `mantenimiento_tipo_Equipo_Inactivo.pdf`);
         const fileStream = fs.createWriteStream(filePath);
 
         // Pipe el documento al archivo
@@ -155,7 +147,7 @@ const generateMaintenanceReportByType = async (req, res) => {
 
         // Título del reporte
         doc.font('Helvetica-Bold').fontSize(20).text(`Reporte de Mantenimiento por`, { align: 'center' });
-        doc.text(`Tipo de Equipo`, { align: 'center' });
+        doc.text(`Tipo de Equipos Inactivos`, { align: 'center' });
         doc.moveDown();
         
         // Definir la tabla con anchos personalizados
@@ -196,7 +188,7 @@ const generateMaintenanceReportByType = async (req, res) => {
          // Agregar el total de mantenimientos
          const totalMantenimientos = maintenances.length;
          doc.moveDown();
-         doc.font('Helvetica-Bold').fontSize(14).text(`Total de Mantenimientos Activos: ${totalMantenimientos}`, { align: 'right' });
+         doc.font('Helvetica-Bold').fontSize(14).text(`Total de Mantenimientos Inactivos: ${totalMantenimientos}`, { align: 'right' });
  
         // Finalizar el documento PDF
         doc.end();
@@ -208,7 +200,7 @@ const generateMaintenanceReportByType = async (req, res) => {
                     console.log('Error al descargar el archivo:', err);
                     return res.status(500).json({ message: 'Hubo un error al intentar descargar el archivo.' });
                 } else {
-                    console.log('Reporte generado por tipo de equipo correctamente');
+                    console.log('Reporte generado por tipo de equipo inactivo correctamente');
                 }
             });
         });
@@ -224,37 +216,38 @@ const generateMaintenanceReportByType = async (req, res) => {
     }
 };
 
-// Reporte general de mantenimiento
-const generateGeneralMaintenanceReport = async (req, res) => {
+//REPORTE GENERAL DE MANTENIMIENTOS TERMINADOS
+const generateGeneralMaintenanceReportInactive = async (req, res) => {
     try {
-        const maintenances = await maintenanceService.getMaintenancesReport();
+        // Filtrar todos los mantenimientos inactivos (estado 0)
+        const maintenances = await maintenanceService.getMaintenancesReportInactive(0);
 
         if (!maintenances || maintenances.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron mantenimientos.' });
+            return res.status(404).json({ message: 'No se encontraron mantenimientos inactivos.' });
         }
 
-        const dirPath = path.join(__dirname, '../reports/reportesMantenimiento');
+        const dirPath = path.join(__dirname, '../reports/reportesMantenimientoInactivos');
         if (!fs.existsSync(dirPath)) {
             fs.mkdirSync(dirPath, { recursive: true });
         }
 
         const doc = new PDFDocumentWithTables(PDFDocument);
-        const filePath = path.join(dirPath, 'mantenimiento_reporte_general.pdf');
+        const filePath = path.join(dirPath, 'mantenimiento_reporte_general_inactivo.pdf');
         const fileStream = fs.createWriteStream(filePath);
 
         doc.pipe(fileStream);
 
-         // Insertar el logo
-         const logoPath = path.join(__dirname, '../assets/logo triangulo.png');
-         doc.image(logoPath, 45, 40, { width: 100 });
- 
-
+        // Insertar el logo
+        const logoPath = path.join(__dirname, '../assets/logo triangulo.png');
+        doc.image(logoPath, 50, 55, { width: 100 });
 
         // Título del reporte
-        doc.font('Helvetica-Bold').fontSize(20).text(``, { align: 'center' });
-        doc.text(`Reporte de Mantenimientos `, { align: 'center' });
+        doc.font('Helvetica-Bold').fontSize(20).text(`Reporte de Mantenimientos`, { align: 'center' });
+        doc.text(`Terminados`, { align: 'center' });
         doc.moveDown();
+        
 
+        // Definir la tabla con anchos personalizados
         const tableData = {
             headers: [
                 { label: 'ID', width: 40, align: 'center', valign: 'middle'},
@@ -274,8 +267,10 @@ const generateGeneralMaintenanceReport = async (req, res) => {
             ])
         };
 
-         // Establecer el lugar donde empieza la tabla
-        doc.x += -32; 
+        doc.x += -32;
+        doc.y += 1;
+
+        // Crear la tabla en el documento
         const options = {
             prepareHeader: () => doc.font('Helvetica-Bold').fontSize(12),
             prepareRow: (row, i) => doc.font('Helvetica').fontSize(12),
@@ -284,28 +279,26 @@ const generateGeneralMaintenanceReport = async (req, res) => {
             lineGap: 4,
             width: 530  
         };
-        
-        
+
         doc.table(tableData, options);
 
         const totalMantenimientos = maintenances.length;
         doc.moveDown();
-        doc.font('Helvetica-Bold').fontSize(14).text(`Total de Mantenimientos activos: ${totalMantenimientos}`, { align: 'right' });
+        doc.font('Helvetica-Bold').fontSize(14).text(`Total de Mantenimientos Terminados: ${totalMantenimientos}`, { align: 'right' });
 
         doc.end();
 
-        
         fileStream.on('finish', () => {
-            res.status(200).download
-            (filePath, `mantenimiento_reporte_general.pdf`, (err) => {
+            res.status(200).download(filePath, 'Reporte_mantenimiento_finalizados.pdf', (err) => {
                 if (err) {
                     console.log('Error al descargar el archivo:', err);
                     return res.status(500).json({ message: 'Hubo un error al intentar descargar el archivo.' });
                 } else {
-                    console.log('Reporte general generado correctamente');
+                    console.log('Reporte de mantenimiento terminados generado correctamente');
                 }
             });
         });
+
         fileStream.on('error', (err) => {
             console.log('Error al escribir el archivo:', err);
             res.status(500).json({ message: 'Hubo un error al generar el reporte.' });
@@ -317,9 +310,8 @@ const generateGeneralMaintenanceReport = async (req, res) => {
     }
 };
 
-
 module.exports = {
-    generateMaintenanceReportByDate,
-    generateMaintenanceReportByType,
-    generateGeneralMaintenanceReport
+    generateMaintenanceReportByDateInactive,
+    generateMaintenanceReportByTypeInactive,
+    generateGeneralMaintenanceReportInactive
 }
