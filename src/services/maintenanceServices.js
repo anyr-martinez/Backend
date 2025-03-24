@@ -6,7 +6,7 @@ const { Op } = require("sequelize");
 
 // Obtener equipo por ID
 exports.getEquipoById = async (id_equipo) => {
-  const query = `SELECT estado FROM equipos WHERE id_equipo = ?`; // Usa el nombre correcto de la columna
+  const query = `SELECT estado FROM equipos WHERE id_equipo = ?`; 
   const [result] = await pool.execute(query, [id_equipo]);
   return result[0]; // Retorna el estado del equipo
 };

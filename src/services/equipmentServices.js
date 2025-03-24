@@ -70,7 +70,7 @@ exports.updateEquipment = async (id, data) => {
         // Si se actualizó al menos una fila, obtén los nuevos datos del equipo
         if (updatedResult.affectedRows > 0) {
             const updatedEquipment = await Equipment.getEquipmentById(id);
-            return updatedEquipment;  // Devolver los datos actualizados del equipo
+            return updatedEquipment;  
         } else {
             throw new Error('No se actualizó ninguna fila');
         }

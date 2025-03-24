@@ -20,7 +20,7 @@ const Equipment = {
         if (result.affectedRows === 1) {
             // Devolver los datos completos del equipo insertado
             return {
-                id_equipo: result.insertId, // ID generado automáticamente
+                id_equipo: result.insertId, 
                 descripcion,
                 tipo,
                 numero_serie,

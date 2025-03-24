@@ -13,7 +13,7 @@ const registro = async (req, res) => {
         }
 
         // Llama a la función del servicio para crear el usuario
-        const result = await userService.register(nombre, usuario, contrasena, rol); // Pasar rol
+        const result = await userService.register(nombre, usuario, contrasena, rol); 
 
         // Si la creación fue exitosa, retorna la respuesta con el resultado
         res.status(201).json({
@@ -97,7 +97,7 @@ const updatePassword = async (req, res, next) => {
             return res.status(400).json({ message: "El ID del usuario y la nueva contraseña son obligatorios" });
         }
         // Verificar si el usuario existe
-        const user = await userService.getUserById(id);  // Asegúrate de tener este método en tu servicio
+        const user = await userService.getUserById(id);  
         if (!user) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
@@ -112,7 +112,7 @@ const updatePassword = async (req, res, next) => {
         // Enviar la respuesta si la contraseña fue actualizada
         res.status(200).json(updatedPass);
     } catch (error) {
-        next(error); // Capturar y pasar el error al middleware de manejo de errores
+        next(error); 
     }
 };
 
@@ -130,7 +130,7 @@ const getAllUsers = async (req, res, next) => {
 const getByUser = async (req, res, next) => {
     try {
         const { usuario } = req.params;  
-        const user = await userService.getByUser(usuario); // Llamas al servicio pasando el username
+        const user = await userService.getByUser(usuario); 
         if (!user) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
@@ -167,7 +167,7 @@ const getUserById = async (req, res, next) => {
             return res.status(200).json({ message: "Usuario no activo" });
         }
     } catch (error) {
-        next(error);  // Manejo de errores
+        next(error);  
     }
 };
 

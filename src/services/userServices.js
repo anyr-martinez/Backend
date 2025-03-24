@@ -16,7 +16,7 @@ exports.register = async (nombre, usuario, contrasena, rol) => {
         const hashedPassword = await bcrypt.hash(contrasena, 12);
 
         // Crear usuario con rol
-        const user = await User.register(nombre, usuario, hashedPassword, rol); // Asegúrate de incluir 'rol' en el método de la base de datos
+        const user = await User.register(nombre, usuario, hashedPassword, rol); 
         
         return { message: 'Usuario registrado con éxito', userId: user.insertId };
     } catch (error) {
@@ -43,7 +43,7 @@ exports.login = async (usuario, contrasena) => {
 
         // Generar el token JWT
         const token = jwt.sign(
-            { id: user.id_usuario, usuario: user.usuario, rol: user.rol },  // Incluye el 'rol' en el token
+            { id: user.id_usuario, usuario: user.usuario, rol: user.rol },  
             process.env.JWT_SECRET,
             { expiresIn: "4h" }
         );
@@ -52,7 +52,7 @@ exports.login = async (usuario, contrasena) => {
             id: user.id_usuario,
             nombre: user.nombre,
             usuario: user.usuario,
-            rol: user.rol,  // Incluye el rol en la respuesta
+            rol: user.rol,  
             token
         };
     } catch (error) {
@@ -142,7 +142,7 @@ exports.deleteU = async (id) => {
             throw new Error('Usuario no encontrado');
         }
 
-        // Realizar la eliminación sin llamar de nuevo a deleteU
+        // Realizar la eliminación 
         const query = 'UPDATE usuarios SET estado = 0 WHERE id_usuario = ?';
         const [result] = await pool.execute(query, [id]);
 

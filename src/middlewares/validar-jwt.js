@@ -33,7 +33,7 @@ const validarJWT = async (req, res, next) => {
 
         // Asignar el usuario y el rol a la solicitud para usarlo en rutas protegidas
         req.user = user;
-        req.rol = rol; // Añadimos el rol a la solicitud
+        req.rol = rol;
 
         next();
     } catch (error) {
