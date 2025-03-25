@@ -364,7 +364,7 @@ router.get('/:id', userController.getUserById);
  *       500:
  *         description: Error interno del servidor.
  */
-router.get('/users/:usuario', userController.getByUser);
+router.get('/users/:usuario', validarCampos,userController.getByUser);
 
 //Documentacion de eliminar o inhabilitar un usuario
 /**

@@ -345,7 +345,7 @@ router.get('/maintenance/:id', maintenanceController.getMaintenanceById);
 router.delete('/deleteMaintenance/:id', checkMaintenanceStatus, validarCampos, validarJWT, maintenanceController.deleteMaintenance);
 
 
-//Doumentacion de Reportes 
+//Documentacion de Reportes 
 /**
  * @swagger
  * /api/maintenance/report/date:
@@ -518,7 +518,7 @@ router.get('/reports/inactiveDate', validarCampos, validarJWT,reportesMantenimie
  *       500:
  *         description: Error al generar el reporte.
  */
-router.get('/reports/inactiveType', reportesMantenimientosInactivos.generateMaintenanceReportByTypeInactive);
+router.get('/reports/inactiveType', validarCampos, validarJWT,reportesMantenimientosInactivos.generateMaintenanceReportByTypeInactive);
 
 // Documentación para reporte general de mantenimientos inactivos
 /**

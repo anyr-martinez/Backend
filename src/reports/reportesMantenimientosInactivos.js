@@ -37,7 +37,7 @@ const generateMaintenanceReportByDateInactive = async (req, res) => {
 
         // Insertar el logo
         const logoPath = path.join(__dirname, '../assets/logo triangulo.png');
-        doc.image(logoPath, 45, 55, { width: 100 });
+        doc.image(logoPath, 40, 60, { width: 96 });
 
         // Título del reporte
         doc.font('Helvetica-Bold').fontSize(20).text(`Reporte de Mantenimiento Terminados`, { align: 'center' });
