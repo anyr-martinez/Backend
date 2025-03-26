@@ -2,7 +2,8 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const equipmentService = require('../services/equipmentServices');
-const PDFDocumentWithTables = require('pdfkit-table');  // Usar la clase extendida correctamente
+const PDFDocumentWithTables = require('pdfkit-table'); 
+const moment = require('moment'); 
 
 // Reporte de equipos activos en PDF
 const generateEquipmentReport = async (req, res) => {
@@ -43,9 +44,9 @@ const generateEquipmentReport = async (req, res) => {
         const tableData = {
             headers: [
                 { label: 'ID', width: 40, align: 'center', valign: 'middle'}, 
-                { label: 'Descripción', width: 150, align: 'center', valign: 'middle'},
-                { label: 'Tipo', width: 100, align: 'center', valign: 'middle'},
-                { label: 'Número de Serie', width: 100, align: 'center', valign: 'middle'},
+                { label: 'Descripción', width: 150, align: 'left', valign: 'middle'},
+                { label: 'Tipo', width: 100, align: 'left', valign: 'middle'},
+                { label: 'Número de Serie', width: 100, align: 'left', valign: 'middle'},
                 { label: 'Fecha de Registro', width: 100, align: 'center', valign: 'middle'}
             ],
             rows: equipments.map(equipment => [
@@ -53,7 +54,7 @@ const generateEquipmentReport = async (req, res) => {
                 equipment.descripcion,
                 equipment.tipo, 
                 equipment.numero_serie,
-                equipment.fecha_registro ? new Date(equipment.fecha_registro).toLocaleDateString() : 'Desconocida',
+                equipment.fecha_registro ? moment(equipment.fecha_registro).format('DD/MM/YYYY') : 'Desconocida',
             ])
         };
 
@@ -76,7 +77,7 @@ const generateEquipmentReport = async (req, res) => {
         // Agregar el total de equipos activos al final del reporte
         const totalEquipos = equipments.length;
         doc.moveDown();
-        doc.font('Helvetica-Bold').fontSize(14).text(`Total de equipos activos: ${totalEquipos}`, { align: 'right' });
+        doc.font('Helvetica-Bold').fontSize(14).text(`Total de Equipos Activos: ${totalEquipos}`, { align: 'right' });
 
         // Finalizar el documento PDF
         doc.end();
@@ -149,7 +150,7 @@ const generateInactiveEquipmentReport = async (req, res) => {
                 equipment.descripcion,
                 equipment.tipo,
                 equipment.numero_serie,
-                equipment.fecha_registro ? new Date(equipment.fecha_registro).toLocaleDateString() : 'Desconocida',
+                equipment.fecha_registro ? moment(equipment.fecha_registro).format('DD/MM/YYYY') : 'Desconocida',
             ])
         };
 
@@ -171,7 +172,7 @@ const generateInactiveEquipmentReport = async (req, res) => {
         // Agregar el total de equipos inactivos al final del reporte
         const totalEquipos = equipments.length;
         doc.moveDown();
-        doc.font('Helvetica-Bold').fontSize(14).text(`Total de equipos inactivos: ${totalEquipos}`, { align: 'right' });
+        doc.font('Helvetica-Bold').fontSize(14).text(`Total de Equipos Inactivos: ${totalEquipos}`, { align: 'right' });
 
         // Finalizar el documento PDF
         doc.end();

@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const maintenanceService = require('../services/maintenanceServices');
 const PDFDocumentWithTables = require('pdfkit-table');
+const moment = require('moment'); 
 
 //REPORTE PARA MANTENIMIENTOS CON FECHA INACTIVOS
 const generateMaintenanceReportByDateInactive = async (req, res) => {
@@ -48,7 +49,7 @@ const generateMaintenanceReportByDateInactive = async (req, res) => {
             headers: [
                 { label: 'ID', width: 30, align: 'center', valign: 'middle' },
                 { label: 'Equipo', width: 140, align: 'left', valign: 'middle' },
-                { label: 'N° Serie', width: 60, align: 'left', valign: 'middle' },
+                { label: 'N° Serie', width: 60, align: 'center', valign: 'middle' },
                 { label: 'Descripción', width: 150, align: 'left', valign: 'middle' },
                 { label: 'Fecha Entrada', width: 70, align: 'center', valign: 'middle' },
                 { label: 'Fecha Salida', width: 70, align: 'center', valign: 'middle' }
@@ -58,8 +59,8 @@ const generateMaintenanceReportByDateInactive = async (req, res) => {
                 maintenance.equipo_descripcion || 'N/A',  
                 maintenance.equipo_numero_serie || 'N/A',
                 maintenance.descripcion.substring(0, 50),
-                new Date(maintenance.fecha_entrada).toLocaleDateString(),
-                maintenance.fecha_salida ? new Date(maintenance.fecha_salida).toLocaleDateString() : 'N/A'
+                maintenance.fecha_entrada ? moment(maintenance.fecha_entrada).format('DD/MM/YY'): 'Desconocida',
+                maintenance.fecha_salida ? moment(maintenance.fecha_salida).format('DD/MM/YY'): 'Desconocida',
             ])
         };
 
@@ -155,7 +156,7 @@ const generateMaintenanceReportByTypeInactive = async (req, res) => {
             headers: [
                 { label: 'ID', width: 40, align: 'center', valign: 'middle'},
                 { label: 'Equipo', width: 80, align: 'left', valign: 'middle'},
-                { label: 'N° Serie', width: 60, align: 'left', valign: 'middle' },
+                { label: 'N° Serie', width: 60, align: 'center', valign: 'middle' },
                 { label: 'Descripción', width: 150, align: 'left', valign: 'middle'},
                 { label: 'Fecha de Entrada', width: 90, align: 'center', valign: 'middle'},
                 { label: 'Fecha de Salida', width: 90, align: 'center', valign: 'middle'}
@@ -165,8 +166,8 @@ const generateMaintenanceReportByTypeInactive = async (req, res) => {
                 maintenance.equipo_tipo || 'N/A',  
                 maintenance.equipo_numero_serie || 'N/A',
                 maintenance.descripcion.substring(0, 50),
-                new Date(maintenance.fecha_entrada).toLocaleDateString(),
-                maintenance.fecha_salida ? new Date(maintenance.fecha_salida).toLocaleDateString() : 'N/A'
+                maintenance.fecha_entrada ? moment(maintenance.fecha_entrada).format('DD/MM/YY'): 'Desconocida',
+                maintenance.fecha_salida ? moment(maintenance.fecha_salida).format('DD/MM/YY'): 'Desconocida',
             ])
         };
 
@@ -252,7 +253,7 @@ const generateGeneralMaintenanceReportInactive = async (req, res) => {
             headers: [
                 { label: 'ID', width: 40, align: 'center', valign: 'middle'},
                 { label: 'Equipo', width: 140, align: 'left', valign: 'middle'},
-                { label: 'N° Serie', width: 60, align: 'left', valign: 'middle' },
+                { label: 'N° Serie', width: 60, align: 'center', valign: 'middle' },
                 { label: 'Descripción', width: 150, align: 'left', valign: 'middle'},
                 { label: 'Fecha de Entrada', width: 70, align: 'center', valign: 'middle'},
                 { label: 'Fecha de Salida', width: 70, align: 'center', valign: 'middle'}
@@ -262,8 +263,8 @@ const generateGeneralMaintenanceReportInactive = async (req, res) => {
                 maintenance.equipo_descripcion || 'N/A',  
                 maintenance.equipo_numero_serie || 'N/A',
                 maintenance.descripcion.substring(0, 50),
-                new Date(maintenance.fecha_entrada).toLocaleDateString(),
-                maintenance.fecha_salida ? new Date(maintenance.fecha_salida).toLocaleDateString() : 'N/A'
+                maintenance.fecha_entrada ? moment(maintenance.fecha_entrada).format('DD/MM/YY'): 'Desconocida',
+                maintenance.fecha_salida ? moment(maintenance.fecha_salida).format('DD/MM/YY'): 'Desconocida',
             ])
         };
 
