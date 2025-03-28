@@ -242,7 +242,6 @@ exports.getMaintenancesByEquipmentTypeInactive = async (tipoEquipo) => {
             LEFT JOIN equipos e ON m.id_equipo = e.id_equipo
             WHERE 
                 m.estado = 0
-                AND e.estado = 0
                 AND e.tipo = ?;
 
         `;
