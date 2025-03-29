@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const maintenanceController = require('../controller/maintenanceController');
 const reportesMantenimientos = require('../reports/reportesMantenimientos');
-const reportesMantenimientosInactivos  = require('../reports/reportesMantenimientosInactivos');
+//const reportesMantenimientosInactivos = require('../reports/reportesMantenimientosInactivos');
 const checkEquipoStatus = require('../middlewares/checkEquipoStatus');
 const checkMaintenanceStatus = require('../middlewares/checkMaintenanceStatus');
-const {validarJWT} = require('../middlewares/validar-jwt');
-const {validarCampos} = require('../middlewares/validar-campos');
+const { validarJWT } = require('../middlewares/validar-jwt');
+const { validarCampos } = require('../middlewares/validar-campos');
 
-//Documentacion para crear un mantenimiento
+// Documentación para crear un mantenimiento
 /**
  * @swagger
  * /api/maintenance/create:
@@ -95,7 +95,7 @@ const {validarCampos} = require('../middlewares/validar-campos');
  */
 router.post('/create', checkEquipoStatus, validarJWT, validarCampos, maintenanceController.createMaintenance);
 
-//Documentacion para mostrar todos los mantenimientos existentes
+// Documentación para mostrar todos los mantenimientos existentes
 /**
  * @swagger
  * /api/maintenance/maintenances:
@@ -157,7 +157,7 @@ router.post('/create', checkEquipoStatus, validarJWT, validarCampos, maintenance
  */
 router.get('/maintenances', maintenanceController.getAllMaintenances);
 
-//Documentacion para actualizar datos de un mantenimiento
+// Documentación para actualizar datos de un mantenimiento
 /**
  * @swagger
  * /api/maintenance/updateMaintenance/{id}:
@@ -203,14 +203,13 @@ router.get('/maintenances', maintenanceController.getAllMaintenances);
  */
 router.put('/updateMaintenance/:id', checkMaintenanceStatus, validarCampos, validarJWT, maintenanceController.updateMaintenance);
 
-
-//Documentacion para llamar al mantenimiento mediante ID
+// Obtener un mantenimiento por ID
 /**
  * @swagger
  * /api/maintenance/maintenance/{id}:
  *   get:
  *     summary: 'Obtener Mantenimiento por ID'
- *     description: 'Obtiene un mantenimiento específico según su ID. El middleware verifica el estado del mantenimiento antes de proceder. Si el estado es "terminado", muestra un mensaje indicándolo, de lo contrario, muestra el mantenimiento en progreso.'
+ *     description: 'Obtiene un mantenimiento específico según su ID. El estado se muestra en formato legible: "Pendiente", "En Proceso", o "Terminado".'
  *     tags:
  *       - Mantenimientos
  *     parameters:
@@ -230,7 +229,7 @@ router.put('/updateMaintenance/:id', checkMaintenanceStatus, validarCampos, vali
  *               properties:
  *                 message:
  *                   type: 'string'
- *                   description: 'Estado del mantenimiento'
+ *                   description: 'Mensaje de éxito'
  *                 maintenance:
  *                   type: 'object'
  *                   properties:
@@ -251,6 +250,7 @@ router.put('/updateMaintenance/:id', checkMaintenanceStatus, validarCampos, vali
  *                       type: 'string'
  *                       format: 'date'
  *                       description: 'Fecha de salida del equipo a mantenimiento'
+ *                    
  *       404:
  *         description: 'Mantenimiento no encontrado'
  *         content:
@@ -282,7 +282,7 @@ router.put('/updateMaintenance/:id', checkMaintenanceStatus, validarCampos, vali
  *                   type: 'string'
  *                   example: 'Error al obtener el mantenimiento'
  */
-router.get('/maintenance/:id', maintenanceController.getMaintenanceById);
+router.get('/maintenance/:id', validarCampos, validarJWT, maintenanceController.getMaintenanceById);
 
 // Documentación para deshabilitar o eliminar un mantenimiento
 /**
@@ -292,256 +292,183 @@ router.get('/maintenance/:id', maintenanceController.getMaintenanceById);
  *     summary: 'Deshabilitar un mantenimiento'
  *     description: 'Permite deshabilitar un mantenimiento específico, cambiando su estado a inhabilitado (estado = 0).'
  *     tags:
- *       - Mantenimientos
+ *      - Mantenimientos
  *     parameters:
  *       - name: 'id'
  *         in: 'path'
  *         required: true
- *         description: 'ID del mantenimiento a deshabilitar'
+ *         description: 'ID único del mantenimiento a deshabilitar'
  *         schema:
  *           type: 'integer'
  *     responses:
  *       200:
- *         description: 'Mantenimiento deshabilitado exitosamente'
+ *         description: 'Mantenimiento deshabilitado'
  *         content:
  *           application/json:
  *             schema:
- *               type: object
+ *               type: 'object'
  *               properties:
  *                 message:
- *                   type: string
- *                   example: 'Mantenimiento deshabilitado exitosamente'
+ *                   type: 'string'
+ *                   example: 'Mantenimiento deshabilitado con éxito'
  *       400:
- *         description: 'El mantenimiento ya está deshabilitado o terminado'
+ *         description: 'Error al deshabilitar mantenimiento'
  *         content:
  *           application/json:
  *             schema:
- *               type: object
+ *               type: 'object'
  *               properties:
  *                 message:
- *                   type: string
- *                   example: 'El mantenimiento ya está deshabilitado'
+ *                   type: 'string'
+ *                   example: 'Error al deshabilitar mantenimiento'
  *       404:
  *         description: 'Mantenimiento no encontrado'
  *         content:
  *           application/json:
  *             schema:
- *               type: object
+ *               type: 'object'
  *               properties:
  *                 message:
- *                   type: string
+ *                   type: 'string'
  *                   example: 'Mantenimiento no encontrado'
  *       500:
  *         description: 'Error interno del servidor'
  *         content:
  *           application/json:
  *             schema:
- *               type: object
+ *               type: 'object'
  *               properties:
  *                 message:
- *                   type: string
- *                   example: 'Error interno del servidor'
+ *                   type: 'string'
+ *                   example: 'Error al procesar la solicitud'
  */
-router.delete('/deleteMaintenance/:id', checkMaintenanceStatus, validarCampos, validarJWT, maintenanceController.deleteMaintenance);
+router.delete('/deleteMaintenance/:id', maintenanceController.deleteMaintenance);
 
-
-//Documentacion de Reportes 
+//RUTA DE REPORTES
+//REPORTE PARA FECHA (COMPLETADOS)
 /**
  * @swagger
  * /api/maintenance/report/date:
  *   get:
- *     summary: Generar reporte de mantenimiento por rango de fechas
- *     description: Genera un reporte de mantenimiento basado en un rango de fechas (startDate y endDate).
- *     tags:
- *       - Mantenimientos
- *     parameters:
- *       - in: query
- *         name: startDate
- *         required: true
- *         schema:
- *           type: string 
- *           format: date
- *         description: Fecha de inicio (en formato YYYY-MM-DD).
- *       - in: query
- *         name: endDate
- *         required: true
- *         schema:
- *           type: string
- *           format: date
- *         description: Fecha de fin (en formato YYYY-MM-DD).
- *     responses:
- *       200:
- *         description: Reporte de mantenimiento generado exitosamente
- *         content:
- *           application/pdf:
- *             schema:
- *               type: string
- *               format: binary
- *       400:
- *         description: Parámetros inválidos
- *       404:
- *         description: No se encontraron mantenimientos en el rango de fechas
- *       500:
- *         description: Error al generar el reporte
- */
-
-router.get('/report/date', validarCampos, validarJWT,reportesMantenimientos.generateMaintenanceReportByDate);
-
-/**
- * @swagger
- * /api/maintenance/report/type:
- *   get:
- *     summary: Generar reporte de mantenimiento por tipo de equipo
- *     description: Genera un reporte de mantenimiento basado en el tipo de equipo.
- *     tags:
- *       - Mantenimientos
- *     parameters:
- *       - in: query
- *         name: tipoEquipo
- *         required: true
- *         schema:
- *           type: string
- *         description: Tipo de equipo.
- *     responses:
- *       200:
- *         description: Reporte de mantenimiento generado exitosamente
- *         content:
- *           application/pdf:
- *             schema:
- *               type: string
- *               format: binary
- *       400:
- *         description: Parámetro 'tipoEquipo' inválido
- *       404:
- *         description: No se encontraron mantenimientos para el tipo de equipo
- *       500:
- *         description: Error al generar el reporte
- */
-
-router.get('/report/type', validarCampos, validarJWT,reportesMantenimientos.generateMaintenanceReportByType);
-
-/**
- * @swagger
- * /api/maintenance/report:
- *   get:
- *     summary: Generar reporte general de mantenimiento
- *     description: Genera un reporte general de todos los mantenimientos.
- *     tags:
- *       - Mantenimientos
- *     responses:
- *       200:
- *         description: Reporte general de mantenimiento generado exitosamente
- *         content:
- *           application/pdf:
- *             schema:
- *               type: string
- *               format: binary
- *       404:
- *         description: No se encontraron mantenimientos
- *       500:
- *         description: Error al generar el reporte
- */
-
-router.get('/report',  validarCampos, validarJWT,reportesMantenimientos.generateGeneralMaintenanceReport);
-
-
-//REPORTES INACTIVOS EN ESTADO 0
-// Documentación para reporte de mantenimientos inactivos por fecha
-/**
- * @swagger
- * /api/maintenance/reports/inactiveDate:
- *   get:
- *     summary: Generar reporte de mantenimientos inactivos por fecha
- *     description: Genera un reporte de mantenimientos inactivos dentro de un rango de fechas especificado.
+ *     summary: Genera un reporte de mantenimiento por fechas y estado.
+ *     description: Genera un reporte de mantenimiento basado en un rango de fechas y estado.
  *     tags:
  *       - Mantenimientos
  *     parameters:
  *       - name: startDate
  *         in: query
- *         description: Fecha de inicio del rango.
+ *         description: Fecha de inicio del rango
  *         required: true
  *         schema:
  *           type: string
- *           format: date
  *       - name: endDate
  *         in: query
- *         description: Fecha de fin del rango.
+ *         description: Fecha de fin del rango
  *         required: true
  *         schema:
  *           type: string
- *           format: date
+ *       - name: estado
+ *         in: query
+ *         description: Estado de los mantenimientos 
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           enum:
+ *             - 0
+ *             - 1
+ *             - 2
+ *           default: null
  *     responses:
  *       200:
- *         description: Reporte de mantenimientos inactivos por fecha generado correctamente.
+ *         description: El archivo PDF de reporte generado.
  *         content:
  *           application/pdf:
  *             schema:
  *               type: string
  *               format: binary
  *       400:
- *         description: Parámetros inválidos o faltantes (startDate o endDate).
+ *         description: Parámetros incorrectos.
  *       404:
- *         description: No se encontraron mantenimientos inactivos en el rango de fechas proporcionado.
+ *         description: No se encontraron mantenimientos en el rango de fechas.
  *       500:
- *         description: Error al generar el reporte.
+ *         description: Error interno al generar el reporte.
  */
-router.get('/reports/inactiveDate', validarCampos, validarJWT,reportesMantenimientosInactivos.generateMaintenanceReportByDateInactive);
+router.get('/report/date', reportesMantenimientos.generateMaintenanceReportByDate);
 
-// Documentación para reporte de mantenimientos inactivos por tipo de equipo
+//RUTA PARA POR TIPO DE EQUIPO Y ESTADO
 /**
  * @swagger
- * /api/maintenance/reports/inactiveType:
+ * /api/maintenance/report/type:
  *   get:
- *     summary: Generar reporte de mantenimientos inactivos por tipo de equipo
- *     description: Genera un reporte de mantenimientos inactivos filtrados por tipo de equipo.
+ *     summary: Genera un reporte de mantenimiento por tipo de equipo y estado.
+ *     description: Genera un reporte de mantenimiento basado en el tipo de equipo y estado.
  *     tags:
  *       - Mantenimientos
  *     parameters:
  *       - name: tipoEquipo
  *         in: query
- *         description: Tipo de equipo para filtrar los mantenimientos inactivos.
+ *         description: El tipo de equipo por el cual filtrar los mantenimientos.
  *         required: true
  *         schema:
  *           type: string
+ *           
+ *       - name: estado
+ *         in: query
+ *         description: El estado por el cual filtrar los mantenimientos.
+ *         required: false
+ *         schema:
+ *           type: string
+ *           
  *     responses:
  *       200:
- *         description: Reporte de mantenimientos inactivos por tipo generado correctamente.
+ *         description: El archivo PDF de reporte generado.
  *         content:
  *           application/pdf:
  *             schema:
  *               type: string
  *               format: binary
  *       400:
- *         description: Parámetro de tipo de equipo faltante.
+ *         description: Parámetro tipoEquipo faltante o estado no válido.
  *       404:
- *         description: No se encontraron mantenimientos inactivos para el tipo de equipo proporcionado.
+ *         description: No se encontraron mantenimientos para el tipo de equipo y estado especificado.
  *       500:
- *         description: Error al generar el reporte.
+ *         description: Error interno al generar el reporte.
  */
-router.get('/reports/inactiveType', validarCampos, validarJWT,reportesMantenimientosInactivos.generateMaintenanceReportByTypeInactive);
+router.get('/report/type', reportesMantenimientos.generateMaintenanceReportByType);
 
-// Documentación para reporte general de mantenimientos inactivos
+// REPORTE GENERAL
 /**
  * @swagger
- * /api/maintenance/reports/general-inactive:
+ * /api/maintenance/report:
  *   get:
- *     summary: Generar reporte general de mantenimientos inactivos
- *     description: Genera un reporte general de todos los mantenimientos inactivos.
+ *     summary: Genera un reporte general de mantenimiento.
+ *     description: Genera un reporte que incluye todos los mantenimientos filtrados por estado.
  *     tags:
  *       - Mantenimientos
+ *     parameters:
+ *       - name: estado
+ *         in: query
+ *         description: Estado de los mantenimientos a incluir en el reporte (pendiente, en proceso, completado).
+ *         required: true
+ *         schema:
+ *           type: string
+ *          
  *     responses:
  *       200:
- *         description: Reporte general de mantenimientos inactivos generado correctamente.
+ *         description: El archivo PDF de reporte generado.
  *         content:
  *           application/pdf:
  *             schema:
  *               type: string
  *               format: binary
+ *       400:
+ *         description: El estado es obligatorio.
  *       404:
- *         description: No se encontraron mantenimientos inactivos.
+ *         description: No se encontraron mantenimientos.
  *       500:
- *         description: Error al generar el reporte.
+ *         description: Error interno al generar el reporte.
  */
-router.get('/reports/general-inactive', validarCampos,validarJWT,reportesMantenimientosInactivos.generateGeneralMaintenanceReportInactive);
+router.get('/report', reportesMantenimientos.generateGeneralMaintenanceReport);
 
-module.exports = router;
+
+module.exports=router;

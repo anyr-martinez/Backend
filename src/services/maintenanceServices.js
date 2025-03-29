@@ -50,10 +50,19 @@ exports.createMaintenance = async (
 // Obtener todos los mantenimientos
 exports.getAllMaintenances = async () => {
   try {
-    const query = `SELECT m.*, e.tipo AS equipo_descripcion, e.numero_serie
-                       FROM mantenimientos m
-                       INNER JOIN equipos e ON m.id_equipo = e.id_equipo
-                       WHERE m.estado = 1 AND e.estado = 1`; // Filtrar por estado = 1 en ambas tablas
+    const query = `
+      SELECT m.*, 
+             e.tipo AS equipo_descripcion, 
+             e.numero_serie, 
+             CASE 
+                 WHEN m.estado = 0 THEN 'Pendiente'
+                 WHEN m.estado = 1 THEN 'En proceso'
+                 WHEN m.estado = 2 THEN 'Terminado'
+                 ELSE 'Desconocido' 
+             END AS estado_mantenimiento
+      FROM mantenimientos m
+      INNER JOIN equipos e ON m.id_equipo = e.id_equipo
+    `;
     const [result] = await pool.execute(query);
     return result;
   } catch (error) {
@@ -61,16 +70,28 @@ exports.getAllMaintenances = async () => {
   }
 };
 
-// Actualizar el mantenimiento
+// Obtener mantenimiento por ID
 exports.getMaintenanceById = async (id) => {
   try {
-    const query = `SELECT * FROM mantenimientos WHERE id_mantenimiento = ? AND estado = 1`;
-    const [rows] = await pool.execute(query, [id]);
-    return rows.length > 0 ? rows[0] : null;
+      const query = `
+          SELECT id_mantenimiento, id_equipo, descripcion, fecha_entrada, fecha_salida, 
+              CASE 
+                  WHEN estado = 0 THEN 'Pendiente'
+                  WHEN estado = 1 THEN 'En Proceso'
+                  WHEN estado = 2 THEN 'Terminado'
+                  ELSE 'Estado desconocido'
+              END AS estado
+          FROM mantenimientos 
+          WHERE id_mantenimiento = ?;
+      `;
+      const [rows] = await pool.execute(query, [id]);
+      return rows.length > 0 ? rows[0] : null;
   } catch (error) {
-    throw new Error("Error al obtener el mantenimiento: " + error.message);
+      throw new Error("Error al obtener el mantenimiento: " + error.message);
   }
 };
+
+
 
 exports.updateMaintenance = async (id_mantenimiento, data) => {
   try {
@@ -119,161 +140,58 @@ exports.deleteMaintenance = async (id) => {
   }
 };
 
-//Obtener mantenimiento por fecha
-exports.getMaintenancesByDate = async (startDate, endDate) => {
+
+//REPORTES
+// Obtener mantenimientos por fecha y estado (pendiente, en proceso, o completado)
+exports.getMaintenancesByDateAndState = async (startDate, endDate, estado = null) => {
   try {
-    const query = `
-            SELECT 
-                m.id_mantenimiento, 
-                e.descripcion AS equipo_descripcion, 
-                e.numero_serie AS equipo_numero_serie, 
-                m.descripcion, 
-                m.fecha_entrada, 
-                m.fecha_salida 
-            FROM mantenimientos m
-            LEFT JOIN equipos e ON m.id_equipo = e.id_equipo
-            WHERE 
-                (m.fecha_entrada <= ? AND (m.fecha_salida >= ? OR m.fecha_salida IS NULL))
-                AND m.estado = 1
-                AND e.estado = 1;
-        `;
+      // Aquí generamos el filtro con los parámetros recibidos
+      const filters = {
+          startDate: startDate,
+          endDate: endDate,
+          estado: estado
+      };
 
-    const [rows] = await pool.execute(query, [endDate, startDate]);
-
-    return rows;
+      // Llamamos a getAllMaintenances con los filtros
+      return await Maintenance.getAllMaintenances(filters);
   } catch (error) {
-    throw new Error(
-      "Error al obtener mantenimientos por fecha: " + error.message
-    );
+      throw new Error('Error al obtener los mantenimientos por fecha y estado: ' + error.message);
   }
 };
 
-// Obtener mantenimientos por tipo de equipo
-exports.getMaintenancesByEquipmentType = async (tipoEquipo) => {
+// Servicio para obtener mantenimientos por tipo de equipo y estado
+exports.getMaintenanceReportByTypeAndStatus = async (tipoEquipo, estado) => {
   try {
-    const query = `
-            SELECT 
-                m.id_mantenimiento, 
-                e.tipo AS equipo_tipo, 
-                e.numero_serie AS equipo_numero_serie, 
-                m.descripcion, 
-                m.fecha_entrada, 
-                m.fecha_salida 
-            FROM mantenimientos m
-            LEFT JOIN equipos e ON m.id_equipo = e.id_equipo
-            WHERE 
-                m.estado = 1
-                AND e.estado = 1
-                AND e.tipo = ?;
-        `;
+      // Aquí generamos el filtro con los parámetros recibidos
+      const filters = {
+          tipo: tipoEquipo,
+          estado: estado
+      };
 
-    const [rows] = await pool.execute(query, [tipoEquipo]);
-
-    return rows;
+      // Llamamos a getAllMaintenances con los filtros
+      return await Maintenance.getAllMaintenances(filters);
   } catch (error) {
-    throw new Error(
-      "Error al obtener mantenimientos por fecha: " + error.message
-    );
+      throw new Error('Error al obtener los mantenimientos por tipo de equipo y estado: ' + error.message);
   }
 };
 
-// Reporte General
-exports.getMaintenancesReport = async () => {
+
+// Servicio para obtener mantenimientos por estado
+exports.getGeneralMaintenanceReport = async (estado) => {
   try {
-    const query = `
-            SELECT 
-                m.id_mantenimiento, 
-                e.descripcion AS equipo_descripcion, 
-                e.numero_serie AS equipo_numero_serie, 
-                m.descripcion, 
-                m.fecha_entrada, 
-                m.fecha_salida, 
-                m.estado 
-            FROM mantenimientos m
-            LEFT JOIN equipos e ON m.id_equipo = e.id_equipo
-            WHERE m.estado = 1 AND e.estado = 1;
-        `;
-    const [rows] = await pool.execute(query);
-    return rows;
+      return await Maintenance.getAllMaintenances({
+          where: {
+              estado: estado, // Filtrar por estado dinámico
+          },
+          include: [{
+              model: Equipment,
+              as: 'equipo',
+              attributes: ['descripcion', 'numero_serie'],
+          }]
+      });
   } catch (error) {
-    throw new Error("Error al obtener mantenimientos: " + error.message);
+      throw new Error('Error al obtener los mantenimientos generales: ' + error.message);
   }
 };
 
-//REPORTES INACTIVOS EN ESTADO 0
-exports.getMaintenancesByDateInactive = async (startDate, endDate) => {
-  try {
-    const query = `
-            SELECT 
-                m.id_mantenimiento, 
-                e.descripcion AS equipo_descripcion, 
-                e.numero_serie AS equipo_numero_serie, 
-                m.descripcion, 
-                m.fecha_entrada, 
-                m.fecha_salida 
-            FROM mantenimientos m
-            LEFT JOIN equipos e ON m.id_equipo = e.id_equipo
-            WHERE 
-                (m.fecha_entrada <= ? AND (m.fecha_salida >= ? OR m.fecha_salida IS NULL))
-                AND m.estado = 0;
-        `;
 
-    const [rows] = await pool.execute(query, [endDate, startDate]);
-
-    return rows;
-  } catch (error) {
-    throw new Error(
-      "Error al obtener mantenimientos por fecha: " + error.message
-    );
-  }
-};
-
-exports.getMaintenancesByEquipmentTypeInactive = async (tipoEquipo) => {
-  try {
-    const query = `
-            SELECT 
-                m.id_mantenimiento, 
-                e.tipo AS equipo_tipo, 
-                e.numero_serie AS equipo_numero_serie, 
-                m.descripcion, 
-                m.fecha_entrada, 
-                m.fecha_salida 
-            FROM mantenimientos m
-            LEFT JOIN equipos e ON m.id_equipo = e.id_equipo
-            WHERE 
-                m.estado = 0
-                AND e.tipo = ?;
-
-        `;
-
-    const [rows] = await pool.execute(query, [tipoEquipo]);
-
-    return rows;
-  } catch (error) {
-    throw new Error(
-      "Error al obtener mantenimientos por fecha: " + error.message
-    );
-  }
-};
-
-exports.getMaintenancesReportInactive = async () => {
-  try {
-    const query = `
-            SELECT 
-                m.id_mantenimiento, 
-                e.descripcion AS equipo_descripcion, 
-                e.numero_serie AS equipo_numero_serie, 
-                m.descripcion, 
-                m.fecha_entrada, 
-                m.fecha_salida, 
-                m.estado 
-            FROM mantenimientos m
-            LEFT JOIN equipos e ON m.id_equipo = e.id_equipo
-            WHERE m.estado = 0;
-        `;
-    const [rows] = await pool.execute(query);
-    return rows;
-  } catch (error) {
-    throw new Error("Error al obtener mantenimientos: " + error.message);
-  }
-};
