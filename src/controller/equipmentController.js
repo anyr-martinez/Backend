@@ -31,6 +31,17 @@ const createEquipment = async (req, res) => {
     }
 };
 
+//Mostrar todos los equipos existentes activos
+const getAllEquipmentsActive=async(req,res,next)=>{
+    try{
+        const equipments=await equipmentService.getAllEquipmentsActive();
+        res.status(200).json({data: equipments})
+    }catch(error){
+        next(error);
+    }
+
+};
+
 //Mostrar todos los equipos existentes
 const getAllEquipments=async(req,res,next)=>{
     try{
@@ -144,6 +155,7 @@ const deleteEquipment = async (req, res, next) => {
 
 module.exports={
     createEquipment,
+    getAllEquipmentsActive,
     getAllEquipments,
     getEquipmentById,
     updateEquipment,

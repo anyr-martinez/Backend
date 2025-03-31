@@ -157,13 +157,13 @@ router.post('/create', checkEquipoStatus, validarJWT, validarCampos, maintenance
  */
 router.get('/maintenances', maintenanceController.getAllMaintenances);
 
-// Documentación para actualizar datos de un mantenimiento
+//Actualizar datos de un mantenimiento
 /**
  * @swagger
  * /api/maintenance/updateMaintenance/{id}:
  *   put:
  *     summary: Actualiza los datos de un mantenimiento
- *     description: Actualiza la información de un mantenimiento solo si su estado es 1. Si el estado es 0, no se permitirá la actualización.
+ *     description: Actualiza la información de un mantenimiento solo si su estado es 1. Si el estado es 0 o 2, no se permitirá la actualización.
  *     tags:
  *       - Mantenimientos
  *     parameters:
@@ -191,22 +191,25 @@ router.get('/maintenances', maintenanceController.getAllMaintenances);
  *                 type: string
  *                 format: date
  *                 description: Fecha de salida del mantenimiento.
+ *               id_equipo:
+ *                 type: integer
+ *                 description: ID del equipo asociado al mantenimiento.
  *     responses:
  *       200:
  *         description: Mantenimiento actualizado exitosamente.
  *       400:
- *         description: El mantenimiento está terminado o datos inválidos.
+ *         description: El mantenimiento no se puede actualizar porque está en estado 0 o 2.
  *       404:
  *         description: Mantenimiento no encontrado.
  *       500:
  *         description: Error interno del servidor.
  */
-router.put('/updateMaintenance/:id', checkMaintenanceStatus, validarCampos, validarJWT, maintenanceController.updateMaintenance);
+router.put('/updateMaintenance/:id',  validarCampos, validarJWT, maintenanceController.updateMaintenance);
 
 // Obtener un mantenimiento por ID
 /**
  * @swagger
- * /api/maintenance/maintenance/{id}:
+ * /api/maintenance/maintenances/{id}:
  *   get:
  *     summary: 'Obtener Mantenimiento por ID'
  *     description: 'Obtiene un mantenimiento específico según su ID. El estado se muestra en formato legible: "Pendiente", "En Proceso", o "Terminado".'
@@ -282,7 +285,45 @@ router.put('/updateMaintenance/:id', checkMaintenanceStatus, validarCampos, vali
  *                   type: 'string'
  *                   example: 'Error al obtener el mantenimiento'
  */
-router.get('/maintenance/:id', validarCampos, validarJWT, maintenanceController.getMaintenanceById);
+router.get('/maintenances/:id', validarCampos, validarJWT, maintenanceController.getMaintenanceById);
+
+//Docuemntacion para cambiar estado 
+/**
+ * @swagger
+ * /api/maintenance/maintenance/status/{id}:
+ *   put:
+ *     summary: 'Actualizar estado de mantenimiento'
+ *     description: 'Cambia el estado de un mantenimiento existente.'
+ *     tags:
+ *       - Mantenimientos
+ *     parameters:
+ *       - name: 'id'
+ *         in: 'path'
+ *         required: true
+ *         description: 'ID del mantenimiento a actualizar'
+ *         schema:
+ *           type: 'integer'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: 'object'
+ *             properties:
+ *               estado:
+ *                 type: 'integer'
+ *                 description: 'Nuevo estado del mantenimiento (0: Pendiente, 1: En proceso, 2: Completado)'
+ *     responses:
+ *       200:
+ *         description: 'Estado actualizado exitosamente'
+ *       400:
+ *         description: 'Datos inválidos'
+ *       404:
+ *         description: 'Mantenimiento no encontrado'
+ *       500:
+ *         description: 'Error del servidor'
+ */
+router.put('/maintenance/status/:id', validarCampos, validarJWT, maintenanceController.updateMaintenanceStatus);
 
 // Documentación para deshabilitar o eliminar un mantenimiento
 /**
@@ -345,7 +386,7 @@ router.get('/maintenance/:id', validarCampos, validarJWT, maintenanceController.
 router.delete('/deleteMaintenance/:id', maintenanceController.deleteMaintenance);
 
 //RUTA DE REPORTES
-//REPORTE PARA FECHA (COMPLETADOS)
+//REPORTE PARA FECHA 
 /**
  * @swagger
  * /api/maintenance/report/date:
@@ -393,7 +434,7 @@ router.delete('/deleteMaintenance/:id', maintenanceController.deleteMaintenance)
  *       500:
  *         description: Error interno al generar el reporte.
  */
-router.get('/report/date', reportesMantenimientos.generateMaintenanceReportByDate);
+router.get('/report/date', validarCampos, validarJWT,reportesMantenimientos.generateMaintenanceReportByDate);
 
 //RUTA PARA POR TIPO DE EQUIPO Y ESTADO
 /**
@@ -434,7 +475,7 @@ router.get('/report/date', reportesMantenimientos.generateMaintenanceReportByDat
  *       500:
  *         description: Error interno al generar el reporte.
  */
-router.get('/report/type', reportesMantenimientos.generateMaintenanceReportByType);
+router.get('/report/type', validarCampos, validarJWT,reportesMantenimientos.generateMaintenanceReportByType);
 
 // REPORTE GENERAL
 /**
@@ -468,7 +509,7 @@ router.get('/report/type', reportesMantenimientos.generateMaintenanceReportByTyp
  *       500:
  *         description: Error interno al generar el reporte.
  */
-router.get('/report', reportesMantenimientos.generateGeneralMaintenanceReport);
+router.get('/report', validarCampos, validarJWT,reportesMantenimientos.generateGeneralMaintenanceReport);
 
 
 module.exports=router;

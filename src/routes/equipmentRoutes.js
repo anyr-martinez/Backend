@@ -72,13 +72,59 @@ const {validarCampos} = require('../middlewares/validar-campos');
  */
 router.post('/create', validarCampos, validarJWT,equipmentController.createEquipment);
 
+// Obtener todos los equipos activos
+//Documentacion para obtener todos los equipos
+/**
+ * @swagger
+ * /api/equipment/equipments/active:
+ *   get:
+ *     summary: 'Obtener todos los equipos activos'
+ *     description: 'Obtiene una lista de todos los equipos registrados en la base de datos.'
+ *     tags:
+ *       - Equipos
+ *     responses:
+ *       200:
+ *         description: 'Lista de todos los equipos registrados en el sistema'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: 'array'
+ *               items:
+ *                 type: 'object'
+ *                 properties:
+ *                   id:
+ *                     type: 'integer'
+ *                     description: 'ID único del equipo'
+ *                   descripcion:
+ *                     type: 'string'
+ *                     description: 'Descripción del equipo'
+ *                   tipo:
+ *                     type: 'string'
+ *                     description: 'Tipo de equipo'
+ *                   numero_serie:
+ *                     type: 'string'
+ *                     description: 'Número de serie del equipo'
+ *                   fecha_registro:
+ *                     type: 'integer'
+ *                     format: 'int64'
+ *                     description: 'Fecha de registro del equipo en formato timestamp'
+ *                   estado:
+ *                     type: 'integer'
+ *                     description: 'Mostrar si el equipo está activo (1) o no (0)'
+ *       500:
+ *         description: 'Error interno del servidor'
+ *       400:
+ *         description: 'Error en la solicitud'
+ */
+router.get('/equipments/active', equipmentController.getAllEquipmentsActive);
+
 // Obtener todos los equipos
 //Documentacion para obtener todos los equipos
 /**
  * @swagger
  * /api/equipment/equipments:
  *   get:
- *     summary: 'Obtener todos los equipos'
+ *     summary: 'Obtener todos los equipos '
  *     description: 'Obtiene una lista de todos los equipos registrados en la base de datos.'
  *     tags:
  *       - Equipos

@@ -6,8 +6,9 @@ const Maintenance = {
     id_equipo,
     descripcion,
     fecha_entrada,
-    fecha_salida
-  ) => {
+    fecha_salida,
+    estado = 0  
+) => {
     // Verificar si el equipo existe y si su estado es diferente de "0" (eliminado)
     const [equipment] = await pool.execute(
       "SELECT * FROM equipos WHERE id_equipo = ? AND estado != 0",
@@ -21,17 +22,20 @@ const Maintenance = {
     // Crear el mantenimiento
     const query = `
             INSERT INTO mantenimientos (id_equipo, descripcion, fecha_entrada, fecha_salida, estado)
-            VALUES (?, ?, ?, ?, 0)  // Estado inicial = 0 (pendiente)
+            VALUES (?, ?, ?, ?, ?)
         `;
     const [result] = await pool.execute(query, [
       id_equipo,
       descripcion,
       fecha_entrada,
       fecha_salida,
+      estado  
     ]);
 
     return result;
-  },
+},
+
+
 
   // Obtener todos los mantenimientos
   getAllMaintenances: async (filters = {}) => {
@@ -44,10 +48,11 @@ const Maintenance = {
       const params = [];
   
       // Filtrar por estado si se proporciona
-      if (filters.estado !== undefined) {
+      if (filters.estado !== undefined && filters.estado !== null) {
         query += ` AND m.estado = ?`;
-        params.push(filters.estado);
-      }
+        params.push(Number(filters.estado)); // Asegurar que es un número
+    }
+    
   
       // Filtrar por fechas si se proporcionan
       if (filters.startDate && filters.endDate) {
@@ -92,39 +97,74 @@ const Maintenance = {
     const [result] = await pool.execute(query, [id_mantenimiento]);
     return result;
   },
+// Obtener mantenimiento por ID
+getMaintenanceById: async (id) => {
+  try {
+    const query = "SELECT id_mantenimiento, descripcion, fecha_entrada, fecha_salida, estado, id_equipo FROM mantenimientos WHERE id_mantenimiento = ?";
+    const [rows] = await pool.execute(query, [id]);
+    return rows[0];
+  } catch (error) {
+    throw new Error("Error al obtener el mantenimiento: " + error.message);
+  }
+},
 
-  // Obtener mantenimiento por ID
-  getMaintenanceById: async (id) => {
-    try {
-      const query = "SELECT * FROM mantenimientos WHERE id_mantenimiento = ?";
-      const [rows] = await pool.execute(query, [id]);
-      return rows[0];
-    } catch (error) {
-      throw new Error("Error al obtener el mantenimiento: " + error.message);
+// Actualizar mantenimiento solo si el estado es 1 (en proceso) o 0 (pendiente)
+updateMaintenanceById: async (id_mantenimiento, { descripcion, fecha_entrada, fecha_salida, id_equipo }) => {
+  try {
+    // Verificar si el mantenimiento está en estado 2 (completado), en cuyo caso no permitir la actualización
+    const queryCheckState = "SELECT estado FROM mantenimientos WHERE id_mantenimiento = ?";
+    const [rows] = await pool.execute(queryCheckState, [id_mantenimiento]);
+    const maintenance = rows[0];
+
+    if (maintenance.estado === 2) {
+      throw new Error("No se puede actualizar el mantenimiento, ya está completado.");
     }
-  },
 
-  // Actualizar mantenimiento solo si el estado es 1 (en proceso)
-  updateMaintenanceById: async (
-    id_mantenimiento,
-    { descripcion, fecha_entrada, fecha_salida }
-  ) => {
-    try {
-      const query = `UPDATE mantenimientos 
-                           SET descripcion = ?, fecha_entrada = ?, fecha_salida = ?
-                           WHERE id_mantenimiento = ? AND estado = 1`; 
-      const [result] = await pool.execute(query, [
-        descripcion,
-        fecha_entrada,
-        fecha_salida,
-        id_mantenimiento,
-      ]);
+    // Realizar la actualización solo si el estado es 0 (Pendiente) o 1 (En Proceso)
+    const query = `
+      UPDATE mantenimientos 
+      SET descripcion = ?, fecha_entrada = ?, fecha_salida = ?, id_equipo = ?
+      WHERE id_mantenimiento = ? AND (estado = 0 OR estado = 1);
+    `;
+    const [result] = await pool.execute(query, [
+      descripcion,
+      fecha_entrada,
+      fecha_salida,
+      id_equipo,
+      id_mantenimiento
+    ]);
 
-      return result.affectedRows > 0;
-    } catch (error) {
-      throw new Error("Error al actualizar el mantenimiento: " + error.message);
+    return result.affectedRows > 0;
+  } catch (error) {
+    throw new Error("Error al actualizar el mantenimiento: " + error.message);
+  }
+},
+
+  // Actualizar estado del mantenimiento
+  updateMaintenanceStatus: async (id_mantenimiento, nuevoEstado) => {
+  try {
+    // Verificar que el mantenimiento existe
+    const query = "SELECT * FROM mantenimientos WHERE id_mantenimiento = ?";
+    const [rows] = await pool.execute(query, [id_mantenimiento]);
+
+    if (rows.length === 0) {
+      throw new Error("Mantenimiento no encontrado");
     }
-  },
+
+    // Cambiar el estado del mantenimiento
+    const updateQuery = "UPDATE mantenimientos SET estado = ? WHERE id_mantenimiento = ?";
+    const [updateResult] = await pool.execute(updateQuery, [nuevoEstado, id_mantenimiento]);
+
+    // Verificar si se actualizó
+    if (updateResult.affectedRows === 0) {
+      throw new Error("Error al actualizar el estado del mantenimiento");
+    }
+
+    return { success: true, message: "Estado actualizado correctamente" };
+  } catch (error) {
+    throw new Error("Error al actualizar el estado: " + error.message);
+  }
+},
 
   // Eliminar un mantenimiento (ponerlo como "pendiente")
   deleteMaintenance: async (id) => {
@@ -133,111 +173,5 @@ const Maintenance = {
     const [result] = await pool.execute(query, [id]);
     return result;
   },
-
-//   //REPORTES
-//   //Obtener por fecha reporte estado
-//   getMaintenanceByDate: async (req, res) => {
-//     try {
-//       const { startDate, endDate } = req.query;
-
-//       if (!startDate || !endDate) {
-//         return res.status(400).json({
-//           message:
-//             "Debe proporcionar un rango de fechas (startDate y endDate).",
-//         });
-//       }
-
-//       const start = new Date(startDate);
-//       const end = new Date(endDate);
-
-//       const query = `
-//         SELECT m.id_mantenimiento, e.descripcion AS equipo_descripcion, e.numero_serie AS equipo_numero_serie, 
-//             m.descripcion, m.fecha_entrada, m.fecha_salida, m.estado 
-//         FROM mantenimiento m
-//         JOIN equipos e ON m.id_equipo = e.id_equipo
-//         WHERE m.fecha_entrada BETWEEN ? AND ? 
-//         AND m.estado = 2;  -- Solo mantenimientos completados
-//     `;
-
-//       const [maintenances] = await db.query(query, [start, end]);
-//       console.log(maintenances);
-
-//       if (!maintenances.length) {
-//         return res.status(404).json({
-//           message:
-//             "No se encontraron mantenimientos completados en el rango de fechas proporcionado.",
-//         });
-//       }
-
-//       res.json(maintenances); 
-//     } catch (error) {
-//       console.error("Error generando el reporte:", error);
-//       res.status(500).json({
-//         message: `Hubo un error generando el reporte. Detalles: ${error.message}`,
-//       });
-//     }
-//   },
-
-//   generateMaintenanceReportByType: async (req, res) => {
-//     try {
-//       const { tipoEquipo } = req.query;
-
-//       if (!tipoEquipo) {
-//         return res.status(400).json({
-//           message:
-//             "Debe proporcionar el tipo de equipo en la query (tipoEquipo).",
-//         });
-//       }
-
-//       const query = `
-//                 SELECT m.id_mantenimiento, e.descripcion AS equipo_descripcion, e.numero_serie AS equipo_numero_serie, 
-//                        m.descripcion, m.fecha_entrada, m.fecha_salida, m.estado
-//                 FROM mantenimiento m
-//                 JOIN equipos e ON m.id_equipo = e.id
-//                 WHERE e.descripcion = ?;
-//             `;
-
-//       const [maintenances] = await db.query(query, [tipoEquipo]);
-
-//       if (!maintenances.length) {
-//         return res.status(404).json({
-//           message: `No se encontraron mantenimientos para el tipo de equipo: ${tipoEquipo}.`,
-//         });
-//       }
-
-//       // Resto del código para generar el PDF...
-//     } catch (error) {
-//       console.error("Error generando el reporte:", error);
-//       res.status(500).json({
-//         message: `Hubo un error generando el reporte. Detalles: ${error.message}`,
-//       });
-//     }
-//   },
-
-//   generateGeneralMaintenanceReport: async (req, res) => {
-//     try {
-//       const query = `
-//                 SELECT m.id_mantenimiento, e.descripcion AS equipo_descripcion, e.numero_serie AS equipo_numero_serie, 
-//                        m.descripcion, m.fecha_entrada, m.fecha_salida, m.estado
-//                 FROM mantenimiento m
-//                 JOIN equipos e ON m.id_equipo = e.id;
-//             `;
-
-//       const [maintenances] = await db.query(query);
-
-//       if (!maintenances.length) {
-//         return res
-//           .status(404)
-//           .json({ message: "No se encontraron mantenimientos." });
-//       }
-
-//       // Resto del código para generar el PDF...
-//     } catch (error) {
-//       console.error("Error generando el reporte:", error);
-//       res.status(500).json({
-//         message: `Hubo un error generando el reporte. Detalles: ${error.message}`,
-//       });
-//     }
-//   },
 };
 module.exports = Maintenance;

@@ -10,7 +10,18 @@ exports.createEquipment = async (descripcion, tipo, numero_serie, fecha_registro
     return await Equipment.createEquipment(descripcion, tipo, numero_serie, fecha_registro);
 };
 
-// Obtener todos los equipos
+// Obtener todos los equipos activos
+exports.getAllEquipmentsActive = async () => {
+    try {
+        const equipments = await Equipment.getAllEquipmentsActive();
+        return equipments;
+    } catch (error) {
+        console.error('Error al obtener los equipos:', error);
+        throw error;
+    }
+};
+
+// Obtener todos los equipos 
 exports.getAllEquipments = async () => {
     try {
         const equipments = await Equipment.getAllEquipments();
@@ -20,6 +31,7 @@ exports.getAllEquipments = async () => {
         throw error;
     }
 };
+
 
 // Obtener un equipo por ID
 exports.getEquipmentById = async (id) => {

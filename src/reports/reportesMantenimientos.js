@@ -13,12 +13,9 @@ const generateMaintenanceReportByDate = async (req, res) => {
     const { startDate, endDate, estado } = req.query;
 
     if (!startDate || !endDate) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Debe proporcionar un rango de fechas (startDate y endDate).",
-        });
+      return res.status(400).json({
+        message: "Debe proporcionar un rango de fechas (startDate y endDate).",
+      });
     }
 
     const start = new Date(startDate);
@@ -32,12 +29,10 @@ const generateMaintenanceReportByDate = async (req, res) => {
     );
 
     if (!maintenances || maintenances.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message:
-            "No se encontraron mantenimientos en el rango de fechas proporcionado.",
-        });
+      return res.status(404).json({
+        message:
+          "No se encontraron mantenimientos en el rango de fechas proporcionado.",
+      });
     }
 
     // Crear el directorio si no existe
@@ -142,11 +137,9 @@ const generateMaintenanceReportByDate = async (req, res) => {
         .download(filePath, "Reporte_Mantenimiento_Fecha.pdf", (err) => {
           if (err) {
             console.log("Error al descargar el archivo:", err);
-            return res
-              .status(500)
-              .json({
-                message: "Hubo un error al intentar descargar el archivo.",
-              });
+            return res.status(500).json({
+              message: "Hubo un error al intentar descargar el archivo.",
+            });
           } else {
             console.log("Reporte Por Fechas generado correctamente");
           }
@@ -159,11 +152,9 @@ const generateMaintenanceReportByDate = async (req, res) => {
     });
   } catch (error) {
     console.error("Error generando el reporte:", error);
-    res
-      .status(500)
-      .json({
-        message: `Hubo un error generando el reporte. Detalles: ${error.message}`,
-      });
+    res.status(500).json({
+      message: `Hubo un error generando el reporte. Detalles: ${error.message}`,
+    });
   }
 };
 
@@ -173,23 +164,19 @@ const generateMaintenanceReportByType = async (req, res) => {
     const { tipoEquipo, estado } = req.query;
 
     if (!tipoEquipo) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Debe proporcionar el tipo de equipo en la query (tipoEquipo).",
-        });
+      return res.status(400).json({
+        message:
+          "Debe proporcionar el tipo de equipo en la query (tipoEquipo).",
+      });
     }
 
     // Validar estado si se proporciona
     const estadosValidos = ["0", "1", "2"];
     if (estado && !estadosValidos.includes(estado)) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "El estado proporcionado no es válido. Los valores permitidos son: 0 (Pendiente), 1 (En proceso), 2 (Completado).",
-        });
+      return res.status(400).json({
+        message:
+          "El estado proporcionado no es válido. Los valores permitidos son: 0 (Pendiente), 1 (En proceso), 2 (Completado).",
+      });
     }
 
     // Filtrar mantenimientos por tipo de equipo y estado
@@ -200,13 +187,11 @@ const generateMaintenanceReportByType = async (req, res) => {
       );
 
     if (!maintenances || maintenances.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: `No se encontraron mantenimientos para el tipo de equipo: ${tipoEquipo} y estado: ${
-            estado || "todos"
-          }.`,
-        });
+      return res.status(404).json({
+        message: `No se encontraron mantenimientos para el tipo de equipo: ${tipoEquipo} y estado: ${
+          estado || "todos"
+        }.`,
+      });
     }
 
     // Crear el directorio si no existe
@@ -233,28 +218,36 @@ const generateMaintenanceReportByType = async (req, res) => {
     const logoPath = path.join(__dirname, "../assets/logo triangulo.png");
     doc.image(logoPath, 55, 60, { width: 100 });
 
-   // Título del reporte
+    // Título del reporte
     doc
-    .font("Helvetica-Bold")
-    .fontSize(18)
-    .text(`Reporte de Mantenimiento por`, { align: "center" });
+      .font("Helvetica-Bold")
+      .fontSize(18)
+      .text(`Reporte de Mantenimiento por`, { align: "center" });
 
     // Tipo de equipo: (en tamaño 16, en negrita)
     doc
-    .font("Helvetica-Bold")
-    .fontSize(16)
-    .text(`Tipo de Equipo: ${tipoEquipo}`, { align: "center" });
+      .font("Helvetica-Bold")
+      .fontSize(16)
+      .text(`Tipo de Equipo: ${tipoEquipo}`, { align: "center" });
 
     if (estado) {
-    // Estado: (en negrita)
-    doc
-    .font("Helvetica")
-    .fontSize(14)
-    .text(`Estado: ${estado === "0" ? "Pendiente" : estado === "1" ? "En Proceso" : "Completado"}`, { align: "center" });
+      // Estado: (en negrita)
+      doc
+        .font("Helvetica")
+        .fontSize(14)
+        .text(
+          `Estado: ${
+            estado === "0"
+              ? "Pendiente"
+              : estado === "1"
+              ? "En Proceso"
+              : "Completado"
+          }`,
+          { align: "center" }
+        );
     }
 
     doc.moveDown();
-
 
     // Definir la tabla con anchos personalizados
     const tableData = {
@@ -263,7 +256,12 @@ const generateMaintenanceReportByType = async (req, res) => {
         { label: "Equipo", width: 100, align: "left", valign: "middle" },
         { label: "N° Serie", width: 55, align: "left", valign: "middle" },
         { label: "Descripción", width: 130, align: "left", valign: "middle" },
-        { label: "Fecha Entrada",width: 60, align: "center",valign: "middle",},
+        {
+          label: "Fecha Entrada",
+          width: 60,
+          align: "center",
+          valign: "middle",
+        },
         { label: "Fecha Salida", width: 60, align: "center", valign: "middle" },
         { label: "Estado", width: 80, align: "center", valign: "middle" },
       ],
@@ -272,9 +270,15 @@ const generateMaintenanceReportByType = async (req, res) => {
         maintenance.equipo_descripcion || "N/A",
         maintenance.numero_serie || "N/A",
         maintenance.descripcion.substring(0, 50),
-        maintenance.fecha_entrada ? moment(maintenance.fecha_entrada).format("DD/MM/YY"): "Desconocida",
-        maintenance.fecha_salida ? moment(maintenance.fecha_salida).format("DD/MM/YY"): "Desconocida",
-        maintenance.estado === 0 ? "Pendiente": maintenance.estado === 1
+        maintenance.fecha_entrada
+          ? moment(maintenance.fecha_entrada).format("DD/MM/YY")
+          : "Desconocida",
+        maintenance.fecha_salida
+          ? moment(maintenance.fecha_salida).format("DD/MM/YY")
+          : "Desconocida",
+        maintenance.estado === 0
+          ? "Pendiente"
+          : maintenance.estado === 1
           ? "En Proceso"
           : "Completado",
       ]),
@@ -314,11 +318,9 @@ const generateMaintenanceReportByType = async (req, res) => {
         .download(filePath, `Mantenimiento_Tipo_${tipoEquipo}.pdf`, (err) => {
           if (err) {
             console.log("Error al descargar el archivo:", err);
-            return res
-              .status(500)
-              .json({
-                message: "Hubo un error al intentar descargar el archivo.",
-              });
+            return res.status(500).json({
+              message: "Hubo un error al intentar descargar el archivo.",
+            });
           } else {
             console.log(
               "Reporte generado por tipo de equipo y estado correctamente"
@@ -333,131 +335,188 @@ const generateMaintenanceReportByType = async (req, res) => {
     });
   } catch (error) {
     console.error("Error generando el reporte:", error);
-    res
-      .status(500)
-      .json({
-        message: `Hubo un error generando el reporte. Detalles: ${error.message}`,
-      });
+    res.status(500).json({
+      message: `Hubo un error generando el reporte. Detalles: ${error.message}`,
+    });
   }
 };
 
 const generateGeneralMaintenanceReport = async (req, res) => {
-    const { estado } = req.query;
+  const { estado } = req.query;
 
-    // Validar estado si se proporciona
-    const estadosValidos = ["0", "1", "2"];
-    if (estado && !estadosValidos.includes(estado)) {
-        return res.status(400).json({
-            message: "El estado proporcionado no es válido. Los valores permitidos son: 0 (Pendiente), 1 (En proceso), 2 (Completado).",
-        });
-    }
+  // Validar estado si se proporciona
+  const estadosValidos = ["0", "1", "2"];
+  if (estado && !estadosValidos.includes(estado)) {
+    return res.status(400).json({
+      message:
+        "El estado proporcionado no es válido. Los valores permitidos son: 0 (Pendiente), 1 (En proceso), 2 (Completado).",
+    });
+  }
 
-    // Filtrar mantenimientos por estado (si se proporciona)
-    const maintenances = await maintenanceService.getGeneralMaintenanceReport(estado);
+  // Filtrar mantenimientos por estado (si se proporciona)
+  const maintenances = await maintenanceService.getGeneralMaintenanceReport(
+    estado
+  );
 
-    if (!maintenances || maintenances.length === 0) {
-        return res.status(404).json({
-            message: `No se encontraron mantenimientos para el estado: ${estado ? estado : "todos"}.`,
-        });
-    }
+  if (!maintenances || maintenances.length === 0) {
+    return res.status(404).json({
+      message: `No se encontraron mantenimientos para el estado: ${
+        estado ? estado : "todos"
+      }.`,
+    });
+  }
 
-    // Crear el directorio si no existe
-    const dirPath = path.join(__dirname, "../reports/reportesMantenimientosGenerales");
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-    }
+  // Crear el directorio si no existe
+  const dirPath = path.join(
+    __dirname,
+    "../reports/reportesMantenimientosGenerales"
+  );
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+  // Generar el nombre del archivo basado en el estado
+  let estadoNombre = "Todos"; // Valor por defecto
+  if (estado === "0") {
+    estadoNombre = "Pendiente";
+  } else if (estado === "1") {
+    estadoNombre = "En Proceso";
+  } else if (estado === "2") {
+    estadoNombre = "Completado";
+  }
 
-    // Crear un nuevo documento PDF
-    const doc = new PDFDocumentWithTables(PDFDocument);
-    const filePath = path.join(
-        dirPath,
-        `Mantenimiento_General_Estado_${estado || "todos"}.pdf`
-    );
-    const fileStream = fs.createWriteStream(filePath);
+// Crear un nuevo documento PDF
+const doc = new PDFDocumentWithTables(PDFDocument);
+const filePath = path.join(
+  dirPath,
+  `Mantenimiento_General_Estado_${estadoNombre}.pdf` // Usar el nombre del estado en el archivo
+);
 
-    // Pipe el documento al archivo
-    doc.pipe(fileStream);
+  const fileStream = fs.createWriteStream(filePath);
 
-    // Insertar el logo
-    const logoPath = path.join(__dirname, "../assets/logo triangulo.png");
-    doc.image(logoPath, 55, 60, { width: 100 });
+  // Pipe el documento al archivo
+  doc.pipe(fileStream);
 
-    // Título del reporte
-    doc.font("Helvetica-Bold").fontSize(18).text(`Reporte de Mantenimientos Generales`, { align: "center" });
+  // Insertar el logo
+  const logoPath = path.join(__dirname, "../assets/logo triangulo.png");
+  doc.image(logoPath, 55, 50, { width: 100 });
 
-    if (estado) {
-        // Estado: (en negrita)
-        doc.font("Helvetica")
-            .fontSize(14)
-            .text(`Estado: ${estado === "0" ? "Pendiente" : estado === "1" ? "En Proceso" : "Completado"}`, { align: "center" });
-    }
+  // Título del reporte
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(18)
+    .text(`Reporte de Mantenimientos Generales`, { align: "center" });
 
-    doc.moveDown();
+  if (estado) {
+    // Estado: (en negrita)
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(16)
+      .text(
+        `Estado: ${
+          estado === "0"
+            ? "Pendiente"
+            : estado === "1"
+            ? "En Proceso"
+            : "Completado"
+        }`,
+        { align: "center" }
+      );
+  }
 
-    // Crear la tabla de datos
-    const tableData = {
-        headers: [
-            { label: "ID", width: 30, align: "center", valign: "middle" },
-            { label: "Equipo", width: 140, align: "left", valign: "middle" },
-            { label: "N° Serie", width: 60, align: "left", valign: "middle" },
-            { label: "Descripción", width: 150, align: "left", valign: "middle" },
-            { label: "Fecha Entrada", width: 70, align: "center", valign: "middle" },
-            { label: "Fecha Salida", width: 70, align: "center", valign: "middle" },
-            { label: "Estado", width: 60, align: "center", valign: "middle" },
-        ],
-        rows: maintenances.map((maintenance) => [
-            String(maintenance.id_mantenimiento),
-            maintenance.equipo_descripcion || "N/A",
-            maintenance.numero_serie || "N/A",
-            maintenance.descripcion.substring(0, 50),
-            maintenance.fecha_entrada
-                ? moment(maintenance.fecha_entrada).format("DD/MM/YY")
-                : "Desconocida",
-            maintenance.fecha_salida
-                ? moment(maintenance.fecha_salida).format("DD/MM/YY")
-                : "Desconocida",
-            maintenance.estado || "Desconocido",
-        ]),
-    };
+  doc.moveDown();
 
-    // Establecer las opciones de la tabla
-    doc.x += -32;
-    const options = {
-        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(12),
-        prepareRow: (row, i) => doc.font("Helvetica").fontSize(12),
-        columnSpacing: 5,
-        padding: 3,
-        lineGap: 4,
-        width: 530,
-    };
+  // Crear la tabla de datos
+  const tableData = {
+    headers: [
+      { label: "ID", width: 30, align: "center", valign: "middle" },
+      { label: "Equipo", width: 110, align: "left", valign: "middle" },
+      { label: "N° Serie", width: 60, align: "left", valign: "middle" },
+      { label: "Descripción", width: 150, align: "left", valign: "middle" },
+      { label: "Fecha Entrada", width: 60, align: "center", valign: "middle" },
+      { label: "Fecha Salida", width: 60, align: "center", valign: "middle" },
+      { label: "Estado", width: 80, align: "center", valign: "middle" },
+    ],
+    rows: maintenances
+      .filter(
+        (maintenance) => estado === undefined || maintenance.estado == estado
+      )
+      .map((maintenance) => [
+        String(maintenance.id_mantenimiento),
+        maintenance.equipo_descripcion || "N/A",
+        maintenance.numero_serie || "N/A",
+        maintenance.descripcion.substring(0, 50),
+        maintenance.fecha_entrada
+          ? moment(maintenance.fecha_entrada).format("DD/MM/YY")
+          : "Desconocida",
+        maintenance.fecha_salida
+          ? moment(maintenance.fecha_salida).format("DD/MM/YY")
+          : "Desconocida",
+        maintenance.estado === 0
+          ? "Pendiente"
+          : maintenance.estado === 1
+          ? "En Proceso"
+          : "Completado",
+      ]),
+  };
 
-    doc.table(tableData, options);
+  // Establecer las opciones de la tabla
+  doc.x += -41;
+  doc.y += 8;
+  const options = {
+    prepareHeader: () => doc.font("Helvetica-Bold").fontSize(12),
+    prepareRow: (row, i) => doc.font("Helvetica").fontSize(12),
+    columnSpacing: 5,
+    padding: 3,
+    lineGap: 4,
+    width: 530,
+  };
 
-    // Total de mantenimientos
-    const totalMantenimientos = maintenances.length;
-    doc.moveDown();
-    doc.font("Helvetica-Bold").fontSize(14).text(`Total de Mantenimientos: ${totalMantenimientos}`, { align: "right" });
+  doc.table(tableData, options);
 
-    doc.end();
+  // Total de mantenimientos
 
-    fileStream.on("finish", () => {
-        res.status(200).download(filePath, `Reporte_General_Mantenimientos_${estado || "todos"}.pdf`, (err) => {
-            if (err) {
-                console.error("Error al intentar descargar el archivo:", err);
-                return res.status(500).json({ message: "Hubo un error al intentar descargar el archivo." });
-            } else {
-                console.log("Reporte general generado correctamente.");
-            }
-        });
+  const mantenimientosFiltrados = maintenances.filter(
+    (maintenance) => estado === undefined || maintenance.estado == estado
+  );
+
+  const totalMantenimientos = mantenimientosFiltrados.length;
+
+  doc.moveDown();
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(14)
+    .text(`Total de Mantenimientos: ${totalMantenimientos}`, {
+      align: "right",
     });
 
-    fileStream.on("error", (err) => {
-        console.error("Error al escribir el archivo:", err);
-        res.status(500).json({ message: "Hubo un error al generar el reporte." });
-    });
+  doc.end();
+
+  fileStream.on("finish", () => {
+    res
+      .status(200)
+      .download(
+        filePath,
+        `Reporte_General_Mantenimientos_Estado_${estadoNombre}.pdf`, 
+        (err) => {
+          if (err) {
+            console.error("Error al intentar descargar el archivo:", err);
+            return res
+              .status(500)
+              .json({
+                message: "Hubo un error al intentar descargar el archivo.",
+              });
+          } else {
+            console.log("Reporte general generado correctamente.");
+          }
+        }
+      );
+  });
+  
+  fileStream.on("error", (err) => {
+    console.error("Error al escribir el archivo:", err);
+    res.status(500).json({ message: "Hubo un error al generar el reporte." });
+  });
 };
-
-
 
 module.exports = {
   generateMaintenanceReportByDate,

@@ -34,8 +34,15 @@ const Equipment = {
     
 
     // Obtener todos los equipos
-    getAllEquipments: async () => {
+    getAllEquipmentsActive: async () => {
         const query = 'SELECT id_equipo, descripcion, tipo, numero_serie, fecha_registro, estado FROM equipos WHERE estado = 1';
+        const [rows] = await pool.execute(query);
+        return rows;
+    },
+
+    // Obtener todos los equipos
+    getAllEquipments: async () => {
+        const query = 'SELECT id_equipo, descripcion, tipo, numero_serie, fecha_registro, estado FROM equipos';
         const [rows] = await pool.execute(query);
         return rows;
     },
