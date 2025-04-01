@@ -386,7 +386,7 @@ router.put('/maintenance/status/:id', validarCampos, validarJWT, maintenanceCont
 router.delete('/deleteMaintenance/:id', maintenanceController.deleteMaintenance);
 
 //RUTA DE REPORTES
-//REPORTE PARA FECHA 
+// RUTA PARA REPORTE POR FECHA Y ESTADO
 /**
  * @swagger
  * /api/maintenance/report/date:
@@ -398,27 +398,26 @@ router.delete('/deleteMaintenance/:id', maintenanceController.deleteMaintenance)
  *     parameters:
  *       - name: startDate
  *         in: query
- *         description: Fecha de inicio del rango
+ *         description: Fecha de inicio del rango 
  *         required: true
  *         schema:
  *           type: string
+ *           format: date
  *       - name: endDate
  *         in: query
- *         description: Fecha de fin del rango
+ *         description: Fecha de fin del rango 
  *         required: true
  *         schema:
  *           type: string
+ *           format: date
  *       - name: estado
  *         in: query
- *         description: Estado de los mantenimientos 
+ *         description: Estado del mantenimiento. 0 = Pendiente, 1 = En proceso, 2 = Completado, 3 = Todos los estados.
  *         required: false
  *         schema:
  *           type: integer
- *           enum:
- *             - 0
- *             - 1
- *             - 2
- *           default: null
+ *           enum: [0, 1, 2, 3]
+ *           default: 3
  *     responses:
  *       200:
  *         description: El archivo PDF de reporte generado.
@@ -435,6 +434,7 @@ router.delete('/deleteMaintenance/:id', maintenanceController.deleteMaintenance)
  *         description: Error interno al generar el reporte.
  */
 router.get('/report/date', validarCampos, validarJWT,reportesMantenimientos.generateMaintenanceReportByDate);
+
 
 //RUTA PARA POR TIPO DE EQUIPO Y ESTADO
 /**
@@ -489,11 +489,12 @@ router.get('/report/type', validarCampos, validarJWT,reportesMantenimientos.gene
  *     parameters:
  *       - name: estado
  *         in: query
- *         description: Estado de los mantenimientos a incluir en el reporte (pendiente, en proceso, completado).
- *         required: true
+ *         description: Estado del mantenimiento. 0 = Pendiente, 1 = En proceso, 2 = Completado, 3 = Todos los estados.
+ *         required: false
  *         schema:
- *           type: string
- *          
+ *           type: integer
+ *           enum: [0, 1, 2, 3]
+ *           default: 3
  *     responses:
  *       200:
  *         description: El archivo PDF de reporte generado.
@@ -503,9 +504,9 @@ router.get('/report/type', validarCampos, validarJWT,reportesMantenimientos.gene
  *               type: string
  *               format: binary
  *       400:
- *         description: El estado es obligatorio.
+ *         description: El estado es inválido o no se ha proporcionado.
  *       404:
- *         description: No se encontraron mantenimientos.
+ *         description: No se encontraron mantenimientos para el estado y rango de fechas proporcionados.
  *       500:
  *         description: Error interno al generar el reporte.
  */

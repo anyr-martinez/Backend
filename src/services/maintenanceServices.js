@@ -175,19 +175,21 @@ exports.deleteMaintenance = async (id) => {
 
 //REPORTES
 // Obtener mantenimientos por fecha y estado (pendiente, en proceso, o completado)
-exports.getMaintenancesByDateAndState = async (startDate, endDate, estado = null) => {
+exports.getMaintenancesByDateAndState = async (startDate, endDate, estado = 3) => {
   try {
-      // Aquí generamos el filtro con los parámetros recibidos
-      const filters = {
-          startDate: startDate,
-          endDate: endDate,
-          estado: estado
-      };
+    // Si estado es 3 (Todos), no aplicamos filtro de estado
+    const filters = {
+      startDate: startDate,
+      endDate: endDate,
+    };
 
-      // Llamamos a getAllMaintenances con los filtros
-      return await Maintenance.getAllMaintenances(filters);
+    if (estado !== 3) {
+      filters.estado = estado; // Solo filtramos si el estado es 0, 1 o 2
+    }
+
+    return await Maintenance.getAllMaintenances(filters);
   } catch (error) {
-      throw new Error('Error al obtener los mantenimientos por fecha y estado: ' + error.message);
+    throw new Error("Error al obtener los mantenimientos por fecha y estado: " + error.message);
   }
 };
 
@@ -209,13 +211,19 @@ exports.getMaintenanceReportByTypeAndStatus = async (tipoEquipo, estado) => {
 
 
 // Servicio para obtener mantenimientos por estado
-exports.getGeneralMaintenanceReport = async (estado) => {
+exports.getGeneralMaintenanceReport = async (estado = 3) => {
   try {
+      // Construcción del filtro de búsqueda
+      const filtro = {};
+
       // Convertir estado a número si está definido
       const estadoNumerico = estado !== undefined ? Number(estado) : undefined;
 
-      // Construcción del filtro de búsqueda
-      const filtro = {};
+      // Solo filtramos si el estado es 0, 1 o 2
+      if (estado !== 3 && estado !== undefined) {
+        filtro.estado = estado; 
+      }
+
       if (estadoNumerico !== undefined && !isNaN(estadoNumerico)) {
           filtro.estado = estadoNumerico; 
       }
@@ -234,6 +242,5 @@ exports.getGeneralMaintenanceReport = async (estado) => {
       throw new Error('Error al obtener los mantenimientos generales: ' + error.message);
   }
 };
-
 
 

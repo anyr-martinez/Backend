@@ -12,21 +12,38 @@ const generateMaintenanceReportByDate = async (req, res) => {
   try {
     const { startDate, endDate, estado } = req.query;
 
+    // Validación de fechas
     if (!startDate || !endDate) {
       return res.status(400).json({
-        message: "Debe proporcionar un rango de fechas (startDate y endDate).",
+        message: "Las fechas de inicio y fin son requeridas.",
       });
     }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // Validar estado si se proporciona
+    const estadosValidos = ["0", "1", "2", "3"];
+    if (estado && !estadosValidos.includes(estado) && estado !== "todos") {
+      return res.status(400).json({
+        message:
+          "El estado proporcionado no es válido. Los valores permitidos son: 0 (Pendiente), 1 (En proceso), 2 (Completado), 3(Todos)",
+      });
+    }
+    // Convertir estado a número para que coincida con la lógica del servicio
+  const estadoNumerico = estado ? Number(estado) : 3
 
-    // Pasamos startDate, endDate y estado como parámetros directamente al servicio
+    // Si el estado es "todos", no se aplica filtro de estado
+    let filtroEstado = null;
+    if (estado !== "todos") {
+      filtroEstado = estado;
+    }
+
+    // Llamada al servicio con las fechas y el filtro adecuado (estado si es necesario)
     const maintenances = await maintenanceService.getMaintenancesByDateAndState(
-      start,
-      end,
-      estado
+      startDate,
+      endDate,
+      estadoNumerico,
+      filtroEstado
     );
+
 
     if (!maintenances || maintenances.length === 0) {
       return res.status(404).json({
@@ -171,14 +188,15 @@ const generateMaintenanceReportByType = async (req, res) => {
     }
 
     // Validar estado si se proporciona
-    const estadosValidos = ["0", "1", "2"];
+    const estadosValidos = ["0", "1", "2", "3"];
     if (estado && !estadosValidos.includes(estado)) {
       return res.status(400).json({
         message:
           "El estado proporcionado no es válido. Los valores permitidos son: 0 (Pendiente), 1 (En proceso), 2 (Completado).",
       });
     }
-
+    
+   
     // Filtrar mantenimientos por tipo de equipo y estado
     const maintenances =
       await maintenanceService.getMaintenanceReportByTypeAndStatus(
@@ -341,21 +359,25 @@ const generateMaintenanceReportByType = async (req, res) => {
   }
 };
 
+//Reporte general
 const generateGeneralMaintenanceReport = async (req, res) => {
   const { estado } = req.query;
 
   // Validar estado si se proporciona
-  const estadosValidos = ["0", "1", "2"];
+  const estadosValidos = ["0", "1", "2", "3"];
   if (estado && !estadosValidos.includes(estado)) {
     return res.status(400).json({
       message:
-        "El estado proporcionado no es válido. Los valores permitidos son: 0 (Pendiente), 1 (En proceso), 2 (Completado).",
+        "El estado proporcionado no es válido. Los valores permitidos son: 0 (Pendiente), 1 (En proceso), 2 (Completado), 3 (Todos).",
     });
   }
 
-  // Filtrar mantenimientos por estado (si se proporciona)
+  // Convertir estado a número para que coincida con la lógica del servicio
+  const estadoNumerico = estado ? Number(estado) : 3;
+
+  // Filtrar mantenimientos por estado (si se proporciona) o incluir todos si estado es 3
   const maintenances = await maintenanceService.getGeneralMaintenanceReport(
-    estado
+    estadoNumerico
   );
 
   if (!maintenances || maintenances.length === 0) {
@@ -374,6 +396,7 @@ const generateGeneralMaintenanceReport = async (req, res) => {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
+
   // Generar el nombre del archivo basado en el estado
   let estadoNombre = "Todos"; // Valor por defecto
   if (estado === "0") {
@@ -384,12 +407,12 @@ const generateGeneralMaintenanceReport = async (req, res) => {
     estadoNombre = "Completado";
   }
 
-// Crear un nuevo documento PDF
-const doc = new PDFDocumentWithTables(PDFDocument);
-const filePath = path.join(
-  dirPath,
-  `Mantenimiento_General_Estado_${estadoNombre}.pdf` // Usar el nombre del estado en el archivo
-);
+  // Crear un nuevo documento PDF
+  const doc = new PDFDocumentWithTables(PDFDocument);
+  const filePath = path.join(
+    dirPath,
+    `Mantenimiento_General_Estado_${estadoNombre}.pdf`
+  );
 
   const fileStream = fs.createWriteStream(filePath);
 
@@ -412,13 +435,7 @@ const filePath = path.join(
       .font("Helvetica-Bold")
       .fontSize(16)
       .text(
-        `Estado: ${
-          estado === "0"
-            ? "Pendiente"
-            : estado === "1"
-            ? "En Proceso"
-            : "Completado"
-        }`,
+        `Estado: ${estado === "0" ? "Pendiente" : estado === "1" ? "En Proceso" : estado === "2" ? "Completado" : "Todos"}`,
         { align: "center" }
       );
   }
@@ -438,7 +455,7 @@ const filePath = path.join(
     ],
     rows: maintenances
       .filter(
-        (maintenance) => estado === undefined || maintenance.estado == estado
+        (maintenance) => estado === undefined || estado === "3" || maintenance.estado == estado
       )
       .map((maintenance) => [
         String(maintenance.id_mantenimiento),
@@ -474,12 +491,9 @@ const filePath = path.join(
   doc.table(tableData, options);
 
   // Total de mantenimientos
-
-  const mantenimientosFiltrados = maintenances.filter(
-    (maintenance) => estado === undefined || maintenance.estado == estado
-  );
-
-  const totalMantenimientos = mantenimientosFiltrados.length;
+  const totalMantenimientos = maintenances.filter(
+    (maintenance) => estado === undefined || estado === "3" || maintenance.estado == estado
+  ).length;
 
   doc.moveDown();
   doc
@@ -494,24 +508,18 @@ const filePath = path.join(
   fileStream.on("finish", () => {
     res
       .status(200)
-      .download(
-        filePath,
-        `Reporte_General_Mantenimientos_Estado_${estadoNombre}.pdf`, 
-        (err) => {
-          if (err) {
-            console.error("Error al intentar descargar el archivo:", err);
-            return res
-              .status(500)
-              .json({
-                message: "Hubo un error al intentar descargar el archivo.",
-              });
-          } else {
-            console.log("Reporte general generado correctamente.");
-          }
+      .download(filePath, `Reporte_General_Mantenimientos_Estado_${estadoNombre}.pdf`, (err) => {
+        if (err) {
+          console.error("Error al intentar descargar el archivo:", err);
+          return res.status(500).json({
+            message: "Hubo un error al intentar descargar el archivo.",
+          });
+        } else {
+          console.log("Reporte general generado correctamente.");
         }
-      );
+      });
   });
-  
+
   fileStream.on("error", (err) => {
     console.error("Error al escribir el archivo:", err);
     res.status(500).json({ message: "Hubo un error al generar el reporte." });
