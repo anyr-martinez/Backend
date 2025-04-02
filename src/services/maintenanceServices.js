@@ -221,7 +221,7 @@ exports.getGeneralMaintenanceReport = async (estado = 3) => {
 
       // Solo filtramos si el estado es 0, 1 o 2
       if (estado !== 3 && estado !== undefined) {
-        filtro.estado = estado; 
+        filtro.estado = estado;   
       }
 
       if (estadoNumerico !== undefined && !isNaN(estadoNumerico)) {
